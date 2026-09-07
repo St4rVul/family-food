@@ -38,5 +38,5 @@ Formato: contexto → decisión → consecuencia. Se agrega una entrada por cada
 ## D-012 · Auth.js, no Neon Auth
 **2026-09-07.** Neon ofrece autenticación integrada con sincronización de usuarios a la base. Suena a menos piezas, pero nuestro requisito no es "login con Google": es login con Google **filtrado por lista blanca**, con un camino de respaldo donde el código va al dueño y no al solicitante. Eso es un gancho a la medida en el callback `signIn`, que Auth.js expone directo y sin atarnos a un producto en beta. Consecuencia: la tabla de usuarios la manejamos nosotros; `member` y `allowed_email` son nuestras.
 
-## D-013 · Base de datos en us-east-1, la misma región de Vercel
-**2026-09-07.** La latencia que importa no es Colombia→base, es función→base: ocurre varias veces por petición. Vercel Hobby corre en `iad1` (N. Virginia); la base va ahí mismo.
+## D-013 · Base de datos en us-east-2 (Ohio)
+**2026-09-07.** La latencia que importa no es Colombia→base sino función→base, porque ocurre varias veces por petición, así que lo ideal era `us-east-1` junto a las funciones de Vercel (`iad1`). Neon no ofreció esa región al crear el proyecto y quedó en Ohio: son unos 15 ms adicionales por consulta, imperceptibles para esta app. Consecuencia: si alguna vez molesta, se migra con un `pg_dump`; conviene hacerlo mientras el volumen sea pequeño.

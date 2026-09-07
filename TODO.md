@@ -91,8 +91,10 @@ mercado-sepulveda.vercel.app
       - **Neon Auth: OFF** (vamos con Auth.js; dos sistemas de login es problema seguro)
       - Functions y AI gateway: OFF
 - [x] Proyecto creado · project-id `divine-water-82655296`
-- [ ] Confirmar región **US East 1 (N. Virginia)** y que *Object storage* y *Neon Auth* quedaron **apagados**
-- [ ] Botón **Connect** → pestaña *Pooled connection* → copiar la cadena
+- [x] Región: **US East 2 (Ohio)**. Virginia no estaba disponible; la diferencia son ~15 ms por consulta y no se siente.
+- [ ] Confirmar que *Object storage* y *Neon Auth* quedaron **apagados**
+- [x] Cadena de conexión copiada y guardada como `DATABASE_URL`
+- [ ] Confirmar que está en **Vercel → Settings → Environment Variables**, marcada para Production, Preview y Development
       > Los 7 pasos del CLI que sugiere Neon (`neon skills`, `neon mcp`, `neon deploy`…) **no se necesitan**: las migraciones van con Drizzle y el despliegue con Vercel.
 - [ ] 🔒 Guardarla; va a ser `DATABASE_URL`. **No la pegues en el chat.**
 - [ ] 📋 Confirmarme: proyecto creado y región.
@@ -119,13 +121,15 @@ Necesitas la dirección del paso 2 antes de empezar.
       - **Orígenes autorizados de JavaScript:**
         ```
         http://localhost:3000
-        https://TU-DIRECCION.vercel.app
+        https://family-food-seven-lilac.vercel.app
         ```
       - **URI de redireccionamiento autorizados:**
         ```
         http://localhost:3000/api/auth/callback/google
-        https://TU-DIRECCION.vercel.app/api/auth/callback/google
+        https://family-food-seven-lilac.vercel.app/api/auth/callback/google
         ```
+
+> Las previsualizaciones de Vercel tienen URL aleatoria y Google no acepta comodines: el login con Google sirve en local y en producción, no en previews. Es normal.
 - [ ] 📋 Pasarme el **Client ID** (termina en `.apps.googleusercontent.com`, no es secreto).
 - [ ] 🔒 Guardar el **Client secret** aparte.
 
@@ -161,8 +165,8 @@ Mándame un mensaje con esto lleno:
 
 ```
 GitHub usuario:        St4rVul ✓
-Vercel dirección:      ________.vercel.app
-Neon:                  listo (región ________)
+Vercel dirección:      family-food-seven-lilac.vercel.app ✓
+Neon:                  listo ✓ (us-east-2 Ohio, divine-water-82655296)
 Google Client ID:      ________.apps.googleusercontent.com
 Resend:                listo
 Turnstile site key:    ________  (o "después")
