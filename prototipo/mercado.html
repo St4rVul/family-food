@@ -1,0 +1,651 @@
+<title>Mercado del Sábado</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F5F4EE; --surface:#FFFFFF; --sunk:#EDEBE2;
+  --ink:#1F2420; --muted:#6C7368; --line:#DEDBD0;
+  --accent:#2E6F4E; --accent-soft:#DCEBE0; --on-accent:#FFFFFF;
+  --panela:#C8791B; --danger:#A63A2A; --good:#2E6F4E;
+  --shadow:0 1px 2px rgba(31,36,32,.06),0 8px 24px -18px rgba(31,36,32,.5);
+  --r:10px;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#14170F; --surface:#1C2018; --sunk:#252A21;
+  --ink:#E9EBE0; --muted:#9AA292; --line:#333A2E;
+  --accent:#6FB98A; --accent-soft:#25382C; --on-accent:#0E1310;
+  --panela:#E0A052; --danger:#E08272; --good:#6FB98A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -18px #000;
+}}
+:root[data-theme="dark"]{
+  --ground:#14170F; --surface:#1C2018; --sunk:#252A21;
+  --ink:#E9EBE0; --muted:#9AA292; --line:#333A2E;
+  --accent:#6FB98A; --accent-soft:#25382C; --on-accent:#0E1310;
+  --panela:#E0A052; --danger:#E08272; --good:#6FB98A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -18px #000;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);
+  font:16px/1.5 Karla,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  padding-bottom:76px;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.3rem}h2{font-size:1.15rem}h3{font-size:1rem}
+.mono,.money{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:940px;margin:0 auto;padding:0 14px}
+header{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.hbar{display:flex;align-items:center;gap:10px;padding:11px 0;justify-content:space-between}
+.brand{display:flex;align-items:baseline;gap:9px;min-width:0}
+.brand small{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--line);z-index:30;
+  display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:env(safe-area-inset-bottom)}
+nav button{background:none;border:0;padding:9px 2px 11px;color:var(--muted);font:inherit;font-size:.74rem;
+  font-weight:700;letter-spacing:.03em;cursor:pointer;border-top:2px solid transparent;margin-top:-1px}
+nav button[aria-current="true"]{color:var(--accent);border-top-color:var(--accent)}
+nav b{display:block;font-size:1.15rem;line-height:1.1;font-weight:400}
+@media(min-width:720px){
+  body{padding-bottom:0}
+  nav{position:static;grid-template-columns:none;display:flex;gap:2px;border-top:0;background:none;
+    max-width:940px;margin:0 auto;padding:0 14px}
+  nav button{border-top:0;border-bottom:2px solid transparent;padding:10px 14px;font-size:.85rem;display:flex;gap:7px;align-items:center}
+  nav button[aria-current="true"]{border-bottom-color:var(--accent)}
+  nav b{display:inline;font-size:1rem}
+}
+main{padding:16px 0 40px}
+section[hidden]{display:none!important}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;align-items:center;gap:10px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)}
+.tiny{font-size:.78rem}
+.label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:22px 0 9px}
+.sechead:first-child{margin-top:0}
+button,.btn{font:inherit;font-weight:700;cursor:pointer;border-radius:8px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);padding:8px 13px;line-height:1.2}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ghost{background:none;border-color:transparent;color:var(--muted);padding:6px 8px}
+.ghost:hover{color:var(--ink)}
+.sm{padding:5px 9px;font-size:.8rem}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:9px 10px;width:100%;min-width:0}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.field{display:flex;flex-direction:column;gap:4px}
+.fgrid{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.chip{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:99px;
+  background:var(--sunk);color:var(--muted);white-space:nowrap}
+.chip.up{background:color-mix(in srgb,var(--danger) 15%,transparent);color:var(--danger)}
+.chip.down{background:var(--accent-soft);color:var(--good)}
+.chip.due{background:color-mix(in srgb,var(--panela) 18%,transparent);color:var(--panela)}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ul.list>li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+ul.list>li:last-child{border-bottom:0}
+li.done .grow{opacity:.42;text-decoration:line-through}
+.total{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  background:var(--accent-soft);border-radius:var(--r);padding:12px 14px}
+.total .money{font-size:1.5rem;font-weight:500}
+.big{font-family:Fraunces,serif;font-size:1.9rem;font-weight:700;line-height:1.05;letter-spacing:-.02em}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(148px,1fr))}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 13px}
+.tile .big{margin-top:3px}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;font-size:.85rem}
+.bar i{display:block;height:14px;border-radius:3px;background:var(--accent);min-width:2px}
+.bar.alt i{background:var(--panela)}
+.days{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.day.hoy{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.day>header{position:static;border:0;border-bottom:1px solid var(--line);background:var(--sunk);padding:7px 12px;display:flex;justify-content:space-between;align-items:baseline}
+.meal{padding:8px 12px;border-bottom:1px dashed var(--line)}
+.meal:last-child{border-bottom:0}
+.meal .label{margin-bottom:3px}
+.meal ul{list-style:none;margin:0;padding:0}
+.meal li{display:flex;justify-content:space-between;gap:6px;align-items:center;padding:1px 0}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);
+  padding:0;width:min(560px,94vw);box-shadow:var(--shadow)}
+dialog::backdrop{background:rgba(20,23,15,.5)}
+dialog form{padding:16px;display:flex;flex-direction:column;gap:12px;max-height:82vh;overflow:auto}
+.pill{display:flex;gap:6px;flex-wrap:wrap}
+.pill button{border-radius:99px;padding:6px 12px;font-size:.82rem;font-weight:500}
+.pill button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:88px;background:var(--ink);color:var(--ground);
+  padding:9px 16px;border-radius:99px;font-size:.85rem;font-weight:700;z-index:60;box-shadow:var(--shadow)}
+.empty{color:var(--muted);font-size:.9rem;padding:14px 0;text-align:center}
+@media(prefers-reduced-motion:no-preference){.toast{animation:pop .2s ease}}
+@keyframes pop{from{opacity:0;transform:translate(-50%,8px)}}
+</style>
+
+<header>
+  <div class="wrap hbar">
+    <div class="brand">
+      <h1>Mercado</h1>
+      <small id="semanaLbl">—</small>
+    </div>
+    <div class="row">
+      <button class="ghost sm" id="prevW" aria-label="Semana anterior">◀</button>
+      <button class="ghost sm" id="hoyW">Hoy</button>
+      <button class="ghost sm" id="nextW" aria-label="Semana siguiente">▶</button>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button data-tab="lista" aria-current="true"><b>🧺</b>Lista</button>
+  <button data-tab="menu"><b>📅</b>Menú</button>
+  <button data-tab="compra"><b>🧾</b>Compras</button>
+  <button data-tab="recetas"><b>🍲</b>Recetas</button>
+  <button data-tab="gastos"><b>📊</b>Gastos</button>
+</nav>
+
+<main class="wrap">
+  <section id="t-lista" class="stack"></section>
+  <section id="t-menu" class="stack" hidden></section>
+  <section id="t-compra" class="stack" hidden></section>
+  <section id="t-recetas" class="stack" hidden></section>
+  <section id="t-gastos" class="stack" hidden></section>
+</main>
+
+<dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
+
+<script>
+/* ---------- datos base (Colombia; precios estimados, se corrigen solos al registrar compras) ---------- */
+const CAT = ["Granos y despensa","Proteína","Verduras","Frutas","Lácteos","Panadería","Bebidas","Aseo","Perros"];
+const P = (id,n,cat,un,freq,base,precio)=>({id,n,cat,un,freq,base,precio});
+const SEED = {
+ catalogo:[
+  P("arroz","Arroz","Granos y despensa","lb","mes",8,3000),
+  P("aceite","Aceite","Granos y despensa","l","mes",2,12000),
+  P("panela","Panela","Granos y despensa","lb","mes",2,3500),
+  P("sal","Sal","Granos y despensa","kg","mes",1,2500),
+  P("azucar","Azúcar","Granos y despensa","lb","mes",2,3000),
+  P("cafe","Café","Granos y despensa","lb","mes",1,12000),
+  P("lentejas","Lentejas","Granos y despensa","lb","mes",2,4500),
+  P("frijoles","Fríjoles","Granos y despensa","lb","mes",2,6000),
+  P("garbanzos","Garbanzos","Granos y despensa","lb","mes",1,6000),
+  P("arveja","Arveja","Granos y despensa","lb","mes",1,5000),
+  P("pasta","Pasta","Granos y despensa","u","mes",3,3500),
+  P("atun","Atún","Proteína","u","mes",4,5500),
+  P("pollo","Pollo","Proteína","lb","sem",4,8000),
+  P("carne","Carne de res","Proteína","lb","sem",2,18000),
+  P("molida","Carne molida","Proteína","lb","sem",2,15000),
+  P("cerdo","Cerdo","Proteína","lb","ocas",2,12000),
+  P("huevos","Huevos","Proteína","u","sem",30,600),
+  P("papa","Papa","Verduras","lb","sem",6,2500),
+  P("platano","Plátano maduro","Verduras","u","sem",6,1500),
+  P("verde","Plátano verde","Verduras","u","sem",4,1200),
+  P("yuca","Yuca","Verduras","lb","ocas",2,2500),
+  P("tomate","Tomate","Verduras","lb","sem",2,3500),
+  P("cebollal","Cebolla larga","Verduras","manojo","sem",1,2500),
+  P("cebollac","Cebolla cabezona","Verduras","lb","sem",1,3000),
+  P("lechuga","Lechuga","Verduras","u","sem",1,3000),
+  P("zanahoria","Zanahoria","Verduras","lb","sem",1,2500),
+  P("limon","Limón","Verduras","lb","sem",1,3000),
+  P("cilantro","Cilantro","Verduras","manojo","sem",1,1000),
+  P("aguacate","Aguacate","Verduras","u","ocas",2,4000),
+  P("banano","Banano","Frutas","lb","sem",2,2500),
+  P("papaya","Papaya","Frutas","lb","sem",2,2500),
+  P("mango","Mango","Frutas","u","sem",3,2000),
+  P("naranja","Naranja","Frutas","lb","sem",3,2500),
+  P("pina","Piña","Frutas","u","ocas",1,6000),
+  P("leche","Leche","Lácteos","l","sem",4,4200),
+  P("queso","Queso","Lácteos","lb","sem",1,12000),
+  P("arepas","Arepas","Panadería","u","sem",20,700),
+  P("pan","Pan","Panadería","u","sem",10,500),
+  P("refresco","Refresco en sobre","Bebidas","u","sem",7,700),
+  P("chocolate","Chocolate","Bebidas","u","mes",1,8000),
+  P("jabonloza","Jabón loza","Aseo","u","mes",1,5000),
+  P("detergente","Detergente","Aseo","kg","mes",1,9000),
+  P("papelh","Papel higiénico","Aseo","paca","mes",1,18000),
+  P("concentrado","Concentrado perros","Perros","kg","mes",10,11000),
+  P("snackperro","Snacks perros","Perros","u","mes",2,8000)
+ ],
+ recetas:[
+  {id:"r-pericos",n:"Huevos pericos",tipo:"desayuno",ing:[{p:"huevos",c:6},{p:"tomate",c:.5},{p:"cebollal",c:.3},{p:"arepas",c:4}]},
+  {id:"r-huevofr",n:"Huevo frito con arepa",tipo:"desayuno",ing:[{p:"huevos",c:4},{p:"arepas",c:4},{p:"queso",c:.2}]},
+  {id:"r-caldo",n:"Caldo de costilla",tipo:"desayuno",ing:[{p:"carne",c:1},{p:"papa",c:1.5},{p:"cilantro",c:.5},{p:"arepas",c:4}]},
+  {id:"r-arroz",n:"Arroz blanco",tipo:"almuerzo",ing:[{p:"arroz",c:1},{p:"aceite",c:.05}]},
+  {id:"r-sudado",n:"Sudado de pollo",tipo:"almuerzo",ing:[{p:"pollo",c:2},{p:"papa",c:2},{p:"tomate",c:.5},{p:"cebollal",c:.3},{p:"arveja",c:.3}]},
+  {id:"r-molida",n:"Carne molida guisada",tipo:"almuerzo",ing:[{p:"molida",c:1.5},{p:"tomate",c:.5},{p:"cebollac",c:.3}]},
+  {id:"r-asada",n:"Carne asada",tipo:"almuerzo",ing:[{p:"carne",c:2},{p:"cebollac",c:.2}]},
+  {id:"r-lentejas",n:"Lentejas",tipo:"almuerzo",ing:[{p:"lentejas",c:1},{p:"papa",c:1},{p:"zanahoria",c:.3},{p:"cebollal",c:.3}]},
+  {id:"r-frijoles",n:"Fríjoles",tipo:"almuerzo",ing:[{p:"frijoles",c:1},{p:"platano",c:1},{p:"zanahoria",c:.3}]},
+  {id:"r-papacoc",n:"Papa cocida",tipo:"almuerzo",ing:[{p:"papa",c:2}]},
+  {id:"r-tajadas",n:"Tajadas de maduro",tipo:"almuerzo",ing:[{p:"platano",c:3},{p:"aceite",c:.1}]},
+  {id:"r-patacon",n:"Patacones",tipo:"almuerzo",ing:[{p:"verde",c:3},{p:"aceite",c:.1}]},
+  {id:"r-ensfria",n:"Ensalada fría",tipo:"almuerzo",ing:[{p:"lechuga",c:.5},{p:"tomate",c:.5},{p:"cebollac",c:.2},{p:"zanahoria",c:.3},{p:"limon",c:.2}]},
+  {id:"r-jugo",n:"Jugo de sobre",tipo:"almuerzo",ing:[{p:"refresco",c:1},{p:"azucar",c:.15}]},
+  {id:"r-ensfrutas",n:"Ensalada de frutas",tipo:"cena",ing:[{p:"banano",c:1},{p:"papaya",c:1},{p:"mango",c:2},{p:"naranja",c:1}]},
+  {id:"r-arepaqueso",n:"Arepa con queso",tipo:"cena",ing:[{p:"arepas",c:4},{p:"queso",c:.4}]},
+  {id:"r-choco",n:"Chocolate con pan",tipo:"cena",ing:[{p:"chocolate",c:.2},{p:"leche",c:1},{p:"pan",c:6}]}
+ ],
+ menu:{}, lista:{}, extras:{}
+};
+const COMIDAS=[["desayuno","Desayuno"],["almuerzo","Almuerzo"],["cena","Cena/Comida"]];
+const DIAS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+
+/* ---------- estado ---------- */
+let S=null, COMPRAS=[], db=null, tab="lista", offW=0, verCompra=null;
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=n=>"$"+Math.round(n||0).toLocaleString("es-CO");
+const fmt=n=>Number(n||0).toLocaleString("es-CO",{maximumFractionDigits:2});
+const uid=p=>p+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const hoy=()=>iso(new Date());
+function sabado(off=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+1)%7)+off*7);return d;}
+function semanaDias(off=offW){const s=sabado(off);return [...Array(7)].map((_,i)=>{const d=new Date(s);d.setDate(s.getDate()+i);return d;});}
+const semKey=()=>iso(sabado(offW));
+const prod=id=>S.catalogo.find(p=>p.id===id);
+const rec=id=>S.recetas.find(r=>r.id===id);
+const diasEntre=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+
+/* ---------- precios ---------- */
+function historial(pid){
+  return COMPRAS.flatMap(c=>(c.items||[]).filter(i=>i.p===pid&&i.cant>0&&i.valor>0).map(i=>({f:c.fecha,pu:i.valor/i.cant})))
+    .sort((a,b)=>a.f<b.f?-1:1);
+}
+function precioAct(pid){const h=historial(pid);return h.length?h[h.length-1].pu:(prod(pid)?.precio||0);}
+function ultimaCompra(pid){const h=historial(pid);return h.length?h[h.length-1].f:null;}
+function variacion(pid){const h=historial(pid);if(h.length<2)return 0;const a=h[h.length-2].pu,b=h[h.length-1].pu;return a?(b-a)/a:0;}
+
+/* ---------- persistencia (db compartida entre celular y PC; localStorage si no hay) ---------- */
+const LS={g:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},
+          s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let tSave;
+function guardar(){
+  render();
+  clearTimeout(tSave);
+  tSave=setTimeout(()=>{
+    if(db) db.doc("app/config").set(S).catch(e=>toast("No se pudo guardar: "+e.code));
+    else LS.s("ff-cfg",S);
+  },350);
+}
+function guardarCompra(c){
+  const i=COMPRAS.findIndex(x=>x.id===c.id);
+  if(i<0)COMPRAS.push(c);else COMPRAS[i]=c;
+  COMPRAS.sort((a,b)=>a.fecha<b.fecha?1:-1);
+  render();
+  if(db) db.doc("compras/"+c.id).set(c).catch(e=>toast("No se pudo guardar: "+e.code));
+  else LS.s("ff-compras",COMPRAS);
+}
+function borrarCompra(id){
+  COMPRAS=COMPRAS.filter(c=>c.id!==id); verCompra=null; render();
+  if(db) db.doc("compras/"+id).delete().catch(()=>{}); else LS.s("ff-compras",COMPRAS);
+}
+async function arrancar(){
+  try{ db=await window.claude.use("db"); }catch(e){ db=null; }
+  if(db){
+    db.doc("app/config").onSnapshot(s=>{
+      if(!s.exists){ S=structuredClone(SEED); db.doc("app/config").set(S).catch(()=>{}); }
+      else S={...structuredClone(SEED),...s.data()};
+      render();
+    },e=>toast("Sin sincronización ("+e.code+")"));
+    db.collection("compras").onSnapshot(s=>{
+      COMPRAS=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.fecha<b.fecha?1:-1);
+      render();
+    },()=>{});
+  }else{
+    S={...structuredClone(SEED),...LS.g("ff-cfg",{})};
+    COMPRAS=LS.g("ff-compras",[]); render();
+  }
+}
+
+/* ---------- UI base ---------- */
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2600);}
+function modal(titulo,html,onOk,okTxt="Guardar"){
+  const f=$("#dlgForm");
+  f.innerHTML=`<h2>${esc(titulo)}</h2>${html}
+    <div class="row" style="justify-content:flex-end;gap:8px;margin-top:4px">
+      <button value="cancel" class="ghost" type="submit" formnovalidate>Cancelar</button>
+      <button value="ok" class="primary" type="submit">${esc(okTxt)}</button></div>`;
+  f.onsubmit=e=>{
+    if(e.submitter&&e.submitter.value==="cancel")return;
+    if(!f.reportValidity()){e.preventDefault();return;}
+    onOk(f);
+  };
+  $("#dlg").showModal();
+  const first=f.querySelector("input:not([type=hidden]),select");if(first)first.focus();
+}
+const num=(f,n)=>parseFloat(String(f.elements[n]?.value||"").replace(/\./g,"").replace(",","."))||0;
+const val=(f,n)=>(f.elements[n]?.value||"").trim();
+function selProd(name,sel,extra=""){
+  const byCat={};S.catalogo.forEach(p=>(byCat[p.cat]=byCat[p.cat]||[]).push(p));
+  return `<select name="${name}" ${extra} required>`+CAT.filter(c=>byCat[c]).map(c=>
+    `<optgroup label="${esc(c)}">`+byCat[c].map(p=>`<option value="${p.id}"${p.id===sel?" selected":""}>${esc(p.n)}</option>`).join("")+`</optgroup>`).join("")+`</select>`;
+}
+
+/* ---------- LISTA ---------- */
+function listaSemana(){
+  const sk=semKey(), need={}, aj=(S.ajustes||{})[sk]||{};
+  const add=(pid,c)=>{const p=prod(pid);if(!p)return;(need[pid]=need[pid]||{p,cant:0}).cant+=c;};
+  semanaDias().forEach(d=>{const m=S.menu[iso(d)]||{};
+    COMIDAS.forEach(([k])=>(m[k]||[]).forEach(rid=>{const r=rec(rid);if(r)r.ing.forEach(i=>add(i.p,i.c));}));});
+  const delMenu=new Set(Object.keys(need));
+  S.catalogo.forEach(p=>{
+    if(need[p.id])return;
+    if(p.freq==="sem")add(p.id,p.base);
+    else if(p.freq==="mes"){const u=ultimaCompra(p.id);if(!u||diasEntre(u,sk)>=26)add(p.id,p.base);}
+  });
+  (S.extras?.[sk]||[]).forEach(e=>add(e.p,e.c));
+  return Object.values(need).map(x=>({...x,cant:aj[x.p.id]??x.cant,menu:delMenu.has(x.p.id),
+      precio:precioAct(x.p.id),mensual:x.p.freq==="mes"&&!delMenu.has(x.p.id)}))
+    .sort((a,b)=>CAT.indexOf(a.p.cat)-CAT.indexOf(b.p.cat)||a.p.n.localeCompare(b.p.n));
+}
+function renderLista(){
+  const sk=semKey(), items=listaSemana(), hechos=new Set(S.lista?.[sk]||[]);
+  const est=items.reduce((s,i)=>s+i.cant*i.precio,0);
+  const pend=items.filter(i=>!hechos.has(i.p.id)).reduce((s,i)=>s+i.cant*i.precio,0);
+  let h="";
+  h+=`<div class="total"><div><div class="label">Estimado del mercado</div>
+      <div class="tiny muted">${items.length} productos · ${hechos.size} ya en el carro</div></div>
+      <div style="text-align:right"><div class="money">${money(est)}</div>
+      <div class="tiny muted">falta ${money(pend)}</div></div></div>`;
+  h+=`<div class="row" style="gap:8px;flex-wrap:wrap">
+      <button class="primary" onclick="nuevaCompraDesdeLista()">Registrar esta compra</button>
+      <button onclick="agregarExtra()">＋ Agregar producto</button>
+      <button class="ghost" onclick="limpiarChecks()">Destildar todo</button></div>`;
+  CAT.forEach(c=>{
+    const g=items.filter(i=>i.p.cat===c); if(!g.length)return;
+    h+=`<div><div class="sechead"><h2>${esc(c)}</h2><span class="tiny muted money">${money(g.reduce((s,i)=>s+i.cant*i.precio,0))}</span></div>
+      <div class="card"><ul class="list">`+g.map(i=>{
+      const hecho=hechos.has(i.p.id), v=variacion(i.p.id);
+      return `<li class="${hecho?"done":""}">
+        <input type="checkbox" ${hecho?"checked":""} onchange="toggleItem('${i.p.id}')" aria-label="${esc(i.p.n)}">
+        <div class="grow"><div>${esc(i.p.n)}
+          ${i.menu?'<span class="chip">del menú</span>':""}
+          ${i.mensual?'<span class="chip due">mensual</span>':""}
+          ${Math.abs(v)>=.08?`<span class="chip ${v>0?"up":"down"}">${v>0?"▲":"▼"}${Math.abs(Math.round(v*100))}%</span>`:""}
+        </div><button class="ghost tiny" style="padding:0" onclick="editarCant('${i.p.id}',${i.cant})">${fmt(i.cant)} ${esc(i.p.un)} · ${money(i.precio)}/${esc(i.p.un)}</button></div>
+        <span class="money">${money(i.cant*i.precio)}</span></li>`;}).join("")+`</ul></div></div>`;
+  });
+  if(!items.length)h+=`<p class="empty">Arma el menú de la semana y la lista se llena sola.</p>`;
+  $("#t-lista").innerHTML=h;
+}
+function toggleItem(pid){const sk=semKey();S.lista=S.lista||{};const a=new Set(S.lista[sk]||[]);
+  a.has(pid)?a.delete(pid):a.add(pid);S.lista[sk]=[...a];guardar();}
+function limpiarChecks(){S.lista=S.lista||{};S.lista[semKey()]=[];guardar();}
+function editarCant(pid,actual){
+  modal("Cantidad · "+prod(pid).n,`<div class="field"><span class="label">Cantidad (${esc(prod(pid).un)})</span>
+    <input name="c" type="number" step="0.25" min="0" value="${actual}" inputmode="decimal" required></div>`,f=>{
+    S.ajustes=S.ajustes||{};(S.ajustes[semKey()]=S.ajustes[semKey()]||{})[pid]=num(f,"c");guardar();});
+}
+function agregarExtra(){
+  modal("Agregar a la lista",`<div class="field"><span class="label">Producto</span>${selProd("p")}</div>
+    <div class="field"><span class="label">Cantidad</span><input name="c" type="number" step="0.25" min="0" value="1" inputmode="decimal" required></div>
+    <p class="tiny muted">¿No está en la lista de productos? Créalo en Recetas → Productos.</p>`,f=>{
+    const sk=semKey();S.extras=S.extras||{};(S.extras[sk]=S.extras[sk]||[]).push({p:val(f,"p"),c:num(f,"c")});guardar();});
+}
+
+/* ---------- MENÚ ---------- */
+function renderMenu(){
+  const dias=semanaDias(),hy=hoy();
+  let h=`<div class="sechead"><h2>Qué se cocina</h2><span class="tiny muted">toca una comida para elegir</span></div><div class="days">`;
+  dias.forEach(d=>{
+    const k=iso(d),m=S.menu[k]||{};
+    h+=`<article class="day${k===hy?" hoy":""}"><header><h3>${DIAS[d.getDay()]}</h3>
+        <span class="tiny muted mono">${d.getDate()}/${d.getMonth()+1}</span></header>`;
+    COMIDAS.forEach(([k2,lbl])=>{
+      const ids=m[k2]||[];
+      h+=`<div class="meal"><div class="label">${lbl}</div><ul>`+
+        (ids.length?ids.map(id=>`<li><span>${esc(rec(id)?.n||"—")}</span></li>`).join("")
+         :`<li class="tiny muted">sin definir</li>`)+
+        `</ul><button class="ghost tiny" style="padding:2px 0" onclick="editarComida('${k}','${k2}')">editar</button></div>`;
+    });
+    h+=`</article>`;
+  });
+  h+=`</div><div class="card"><div class="between"><div><b>Costo estimado de la semana</b>
+      <div class="tiny muted">solo lo que sale del menú, sin mercado mensual</div></div>
+      <span class="money big">${money(listaSemana().filter(i=>i.menu).reduce((s,i)=>s+i.cant*i.precio,0))}</span></div></div>`;
+  $("#t-menu").innerHTML=h;
+}
+function editarComida(fecha,comida){
+  const sel=new Set((S.menu[fecha]||{})[comida]||[]);
+  const orden=["desayuno","almuerzo","cena"];
+  const rs=[...S.recetas].sort((a,b)=>(a.tipo===comida?0:1)-(b.tipo===comida?0:1)||orden.indexOf(a.tipo)-orden.indexOf(b.tipo)||a.n.localeCompare(b.n));
+  modal(DIAS[new Date(fecha+"T12:00").getDay()]+" · "+COMIDAS.find(c=>c[0]===comida)[1],
+    `<div class="pill">`+rs.map(r=>`<button type="button" class="rsel" data-id="${r.id}" aria-pressed="${sel.has(r.id)}"
+      onclick="this.setAttribute('aria-pressed',this.getAttribute('aria-pressed')==='true'?'false':'true')">${esc(r.n)}</button>`).join("")+`</div>`,
+    f=>{const ids=[...f.querySelectorAll('.rsel[aria-pressed="true"]')].map(b=>b.dataset.id);
+      S.menu[fecha]=S.menu[fecha]||{};S.menu[fecha][comida]=ids;guardar();},"Listo");
+}
+
+/* ---------- COMPRAS ---------- */
+function renderCompra(){
+  const c=COMPRAS.find(x=>x.id===verCompra);
+  if(c)return renderCompraDetalle(c);
+  const mes=hoy().slice(0,7),delMes=COMPRAS.filter(x=>x.fecha.slice(0,7)===mes);
+  let h=`<div class="total"><div><div class="label">Gastado en ${new Date(mes+"-02").toLocaleDateString("es-CO",{month:"long"})}</div>
+      <div class="tiny muted">${delMes.length} compras registradas</div></div>
+      <span class="money">${money(delMes.reduce((s,x)=>s+totalCompra(x),0))}</span></div>
+    <div class="row"><button class="primary" onclick="nuevaCompra()">＋ Registrar compra</button></div>`;
+  h+=`<div class="card"><ul class="list">`+(COMPRAS.length?COMPRAS.map(x=>`
+    <li><div class="grow"><b>${esc(x.tienda||"Mercado")}</b>
+      ${x.items?.length?`<span class="chip">${x.items.length} ítems</span>`:`<span class="chip due">solo total</span>`}
+      <div class="tiny muted mono">${x.fecha}</div></div>
+      <span class="money">${money(totalCompra(x))}</span>
+      <button class="ghost sm" onclick="verCompra='${x.id}';render()">abrir</button></li>`).join("")
+    :`<li class="empty">Todavía no hay compras. Empieza por los sábados de los últimos meses: fecha + total del extracto bancario.</li>`)+`</ul></div>`;
+  $("#t-compra").innerHTML=h;
+}
+const totalCompra=c=>c.items?.length?c.items.reduce((s,i)=>s+(i.valor||0),0):(c.total||0);
+function renderCompraDetalle(c){
+  const t=totalCompra(c);
+  let h=`<button class="ghost" onclick="verCompra=null;render()">← Todas las compras</button>
+    <div class="total"><div><div class="label">${esc(c.tienda||"Mercado")}</div><div class="mono tiny muted">${c.fecha}</div></div>
+      <span class="money">${money(t)}</span></div>
+    <div class="row" style="flex-wrap:wrap;gap:8px"><button class="primary" onclick="agregarItem('${c.id}')">＋ Ítem</button>
+      <button onclick="editarCompra('${c.id}')">Editar encabezado</button>
+      <button class="ghost" onclick="if(confirm('¿Borrar esta compra?'))borrarCompra('${c.id}')">Borrar</button></div>`;
+  if(!c.items?.length) h+=`<p class="empty">Compra registrada solo con el total (${money(c.total||0)}).<br>Agrega ítems cuando tengas la factura y la app aprende los precios.</p>`;
+  else h+=`<div class="card"><ul class="list">`+c.items.map((i,ix)=>{
+    const p=prod(i.p);
+    return `<li><div class="grow"><div>${esc(p?.n||i.p)}</div>
+      <div class="tiny muted mono">${fmt(i.cant)} ${esc(p?.un||"")} · ${money(i.valor/(i.cant||1))}/${esc(p?.un||"u")}</div></div>
+      <span class="money">${money(i.valor)}</span>
+      <button class="ghost sm" onclick="agregarItem('${c.id}',${ix})">✎</button></li>`;}).join("")+`</ul></div>`;
+  $("#t-compra").innerHTML=h;
+}
+function nuevaCompra(pre){
+  const s=sabado(0);
+  modal("Registrar compra",
+    `<div class="fgrid"><div class="field"><span class="label">Fecha</span><input type="date" name="f" value="${iso(s)}" required></div>
+     <div class="field"><span class="label">Dónde</span><input name="t" list="tiendas" placeholder="Éxito, D1, plaza..." value="Mercado"></div></div>
+     <datalist id="tiendas">${[...new Set(COMPRAS.map(c=>c.tienda).filter(Boolean))].map(t=>`<option value="${esc(t)}">`).join("")}</datalist>
+     <div class="field"><span class="label">Total pagado</span><input name="v" type="number" min="0" step="100" inputmode="numeric" placeholder="0"></div>
+     <p class="tiny muted">Con el total basta para llevar el gasto. El detalle por producto lo agregas después y sirve para comparar precios.</p>`,
+    f=>{const c={id:uid("c"),fecha:val(f,"f"),tienda:val(f,"t")||"Mercado",total:num(f,"v"),items:pre||[]};
+      guardarCompra(c);verCompra=c.id;tab="compra";render();});
+}
+function nuevaCompraDesdeLista(){
+  const sk=semKey(),hechos=new Set(S.lista?.[sk]||[]),items=listaSemana();
+  const sel=(hechos.size?items.filter(i=>hechos.has(i.p.id)):items).map(i=>({p:i.p.id,cant:i.cant,valor:Math.round(i.cant*i.precio)}));
+  nuevaCompra(sel);
+}
+function editarCompra(id){
+  const c=COMPRAS.find(x=>x.id===id);
+  modal("Editar compra",
+    `<div class="fgrid"><div class="field"><span class="label">Fecha</span><input type="date" name="f" value="${c.fecha}" required></div>
+     <div class="field"><span class="label">Dónde</span><input name="t" value="${esc(c.tienda||"")}"></div></div>
+     <div class="field"><span class="label">Total (si no hay detalle)</span><input name="v" type="number" min="0" step="100" value="${c.total||0}"></div>`,
+    f=>{Object.assign(c,{fecha:val(f,"f"),tienda:val(f,"t"),total:num(f,"v")});guardarCompra(c);});
+}
+function agregarItem(id,ix){
+  const c=COMPRAS.find(x=>x.id===id),it=ix!=null?c.items[ix]:null;
+  modal(it?"Editar ítem":"Agregar ítem",
+    `<div class="field"><span class="label">Producto</span>${selProd("p",it?.p)}</div>
+     <div class="fgrid"><div class="field"><span class="label">Cantidad</span>
+       <input name="c" type="number" step="0.25" min="0" value="${it?.cant??1}" inputmode="decimal" required></div>
+     <div class="field"><span class="label">Valor pagado</span>
+       <input name="v" type="number" min="0" step="50" value="${it?.valor??""}" inputmode="numeric" required></div></div>
+     <p class="tiny muted">El valor total de esa línea en la factura, no el precio unitario.</p>`,
+    f=>{const nv={p:val(f,"p"),cant:num(f,"c"),valor:num(f,"v")};
+      c.items=c.items||[]; ix!=null?c.items[ix]=nv:c.items.push(nv);
+      const p=prod(nv.p); if(p&&nv.cant)p.precio=Math.round(nv.valor/nv.cant);
+      guardarCompra(c);guardar();});
+}
+
+/* ---------- RECETAS Y PRODUCTOS ---------- */
+const costoRec=r=>r.ing.reduce((s,i)=>s+i.c*precioAct(i.p),0);
+function renderRecetas(){
+  let h="";
+  COMIDAS.forEach(([k,lbl])=>{
+    const rs=S.recetas.filter(r=>r.tipo===k).sort((a,b)=>a.n.localeCompare(b.n));
+    h+=`<div><div class="sechead"><h2>${lbl}</h2>
+      <button class="sm" onclick="editarReceta(null,'${k}')">＋ Nueva</button></div>
+      <div class="card"><ul class="list">`+(rs.length?rs.map(r=>`<li>
+        <div class="grow"><div>${esc(r.n)}</div>
+          <div class="tiny muted">${r.ing.map(i=>esc(prod(i.p)?.n||"?")).join(" · ")||"sin ingredientes"}</div></div>
+        <span class="money">${money(costoRec(r))}</span>
+        <button class="ghost sm" onclick="editarReceta('${r.id}')">✎</button></li>`).join("")
+      :`<li class="empty">Sin recetas de ${lbl.toLowerCase()}</li>`)+`</ul></div></div>`;
+  });
+  h+=`<div><div class="sechead"><h2>Productos</h2><button class="sm" onclick="editarProducto()">＋ Nuevo</button></div>
+    <p class="tiny muted" style="margin:0 0 8px">Cada cuánto se merca y el último precio pagado. Esto es lo que alimenta la lista y el estimado.</p>`;
+  CAT.forEach(c=>{
+    const g=S.catalogo.filter(p=>p.cat===c);if(!g.length)return;
+    h+=`<div class="sechead"><h3>${esc(c)}</h3></div><div class="card"><ul class="list">`+g.map(p=>`<li>
+      <div class="grow"><div>${esc(p.n)} <span class="chip">${{sem:"semanal",mes:"mensual",ocas:"ocasional"}[p.freq]}</span></div>
+        <div class="tiny muted mono">${money(precioAct(p.id))}/${esc(p.un)} · lleva ${fmt(p.base)} ${esc(p.un)}</div></div>
+      <button class="ghost sm" onclick="editarProducto('${p.id}')">✎</button></li>`).join("")+`</ul></div>`;
+  });
+  $("#t-recetas").innerHTML=h+`</div>`;
+}
+function filaIng(pid,c){
+  return `<div class="row ingrow" style="gap:6px">${selProd("",pid,'class="ip"')}
+    <input class="ic" type="number" step="0.25" min="0" value="${c??1}" style="width:88px" inputmode="decimal" required>
+    <button type="button" class="ghost sm" onclick="this.parentNode.remove()">✕</button></div>`;
+}
+function addIng(){$("#ings").insertAdjacentHTML("beforeend",filaIng(S.catalogo[0].id,1));}
+function editarReceta(id,tipo){
+  const r=id?rec(id):{n:"",tipo:tipo||"almuerzo",ing:[]};
+  modal(id?"Editar receta":"Nueva receta",
+    `<div class="field"><span class="label">Nombre</span><input name="n" value="${esc(r.n)}" required placeholder="Sudado de pollo"></div>
+     <div class="field"><span class="label">Comida</span><select name="t">${COMIDAS.map(([k,l])=>`<option value="${k}"${r.tipo===k?" selected":""}>${l}</option>`).join("")}</select></div>
+     <div class="field"><span class="label">Ingredientes (para los 4)</span>
+       <div id="ings" class="stack" style="gap:6px">${r.ing.map(i=>filaIng(i.p,i.c)).join("")}</div>
+       <button type="button" class="sm" style="margin-top:6px;align-self:flex-start" onclick="addIng()">＋ Ingrediente</button></div>
+     ${id?`<button type="button" class="ghost" style="align-self:flex-start" onclick="borrarReceta('${id}')">Borrar receta</button>`:""}`,
+    f=>{const ing=[...f.querySelectorAll(".ingrow")].map(row=>({p:row.querySelector(".ip").value,c:parseFloat(row.querySelector(".ic").value)||0})).filter(i=>i.c>0);
+      if(id)Object.assign(r,{n:val(f,"n"),tipo:val(f,"t"),ing});
+      else S.recetas.push({id:uid("r"),n:val(f,"n"),tipo:val(f,"t"),ing});
+      guardar();});
+}
+function borrarReceta(id){
+  S.recetas=S.recetas.filter(r=>r.id!==id);
+  Object.values(S.menu).forEach(m=>COMIDAS.forEach(([k])=>{if(m[k])m[k]=m[k].filter(x=>x!==id)}));
+  $("#dlg").close();guardar();
+}
+function editarProducto(id){
+  const p=id?prod(id):{n:"",cat:"Verduras",un:"lb",freq:"sem",base:1,precio:0};
+  modal(id?"Editar producto":"Nuevo producto",
+    `<div class="field"><span class="label">Nombre</span><input name="n" value="${esc(p.n)}" required></div>
+     <div class="fgrid"><div class="field"><span class="label">Categoría</span>
+       <select name="cat">${CAT.map(c=>`<option${c===p.cat?" selected":""}>${c}</option>`).join("")}</select></div>
+      <div class="field"><span class="label">Unidad</span>
+       <select name="un">${["lb","kg","g","u","l","ml","manojo","paca","bolsa"].map(u=>`<option${u===p.un?" selected":""}>${u}</option>`).join("")}</select></div></div>
+     <div class="fgrid"><div class="field"><span class="label">Cada cuánto</span>
+       <select name="freq">${[["sem","Cada semana"],["mes","Cada mes"],["ocas","Ocasional"]].map(([k,l])=>`<option value="${k}"${p.freq===k?" selected":""}>${l}</option>`).join("")}</select></div>
+      <div class="field"><span class="label">Cantidad típica</span><input name="base" type="number" step="0.25" min="0" value="${p.base}" inputmode="decimal"></div></div>
+     <div class="field"><span class="label">Precio por ${esc(p.un)} (estimado)</span><input name="precio" type="number" min="0" step="50" value="${Math.round(p.precio)}" inputmode="numeric"></div>
+     ${id?`<button type="button" class="ghost" style="align-self:flex-start" onclick="borrarProducto('${id}')">Borrar producto</button>`:""}`,
+    f=>{const d={n:val(f,"n"),cat:val(f,"cat"),un:val(f,"un"),freq:val(f,"freq"),base:num(f,"base"),precio:num(f,"precio")};
+      if(id)Object.assign(p,d);else S.catalogo.push({id:uid("p"),...d});
+      guardar();});
+}
+function borrarProducto(id){
+  S.catalogo=S.catalogo.filter(p=>p.id!==id);
+  S.recetas.forEach(r=>r.ing=r.ing.filter(i=>i.p!==id));
+  $("#dlg").close();guardar();
+}
+
+/* ---------- GASTOS ---------- */
+function renderGastos(){
+  const hy=hoy(), mesAct=hy.slice(0,7);
+  const porMes={}; COMPRAS.forEach(c=>porMes[c.fecha.slice(0,7)]=(porMes[c.fecha.slice(0,7)]||0)+totalCompra(c));
+  const meses=Object.keys(porMes).sort().slice(-6);
+  const desde90=iso(new Date(Date.now()-90*864e5));
+  const rec90=COMPRAS.filter(c=>c.fecha>=desde90);
+  const semanas=8, desdeS=iso(new Date(Date.now()-semanas*7*864e5));
+  const promSem=COMPRAS.filter(c=>c.fecha>=desdeS).reduce((s,c)=>s+totalCompra(c),0)/semanas;
+  const gastoPerros=rec90.reduce((s,c)=>s+(c.items||[]).filter(i=>prod(i.p)?.cat==="Perros").reduce((a,i)=>a+i.valor,0),0);
+  const porCat={},porProd={};
+  rec90.forEach(c=>(c.items||[]).forEach(i=>{const p=prod(i.p);if(!p)return;
+    porCat[p.cat]=(porCat[p.cat]||0)+i.valor; porProd[p.id]=(porProd[p.id]||0)+i.valor;}));
+  const conDetalle=rec90.filter(c=>c.items?.length).length;
+
+  let h=`<div class="tiles">
+    <div class="tile"><div class="label">Este mes</div><div class="big money">${money(porMes[mesAct]||0)}</div></div>
+    <div class="tile"><div class="label">Promedio semanal</div><div class="big money">${money(promSem)}</div>
+      <div class="tiny muted">últimas ${semanas} semanas</div></div>
+    <div class="tile"><div class="label">Por persona al día</div><div class="big money">${money(promSem/7/4)}</div>
+      <div class="tiny muted">familia de 4</div></div>
+    <div class="tile"><div class="label">Perros · 90 días</div><div class="big money">${money(gastoPerros)}</div></div></div>`;
+
+  h+=`<div><div class="sechead"><h2>Gasto por mes</h2><span class="tiny muted">${COMPRAS.length} compras</span></div><div class="card bars">`;
+  if(meses.length){const mx=Math.max(...meses.map(m=>porMes[m]));
+    h+=meses.map(m=>`<div class="bar"><span class="tiny muted mono">${m}</span>
+      <i style="width:${Math.max(2,porMes[m]/mx*100)}%"></i><span class="money tiny">${money(porMes[m])}</span></div>`).join("");}
+  else h+=`<p class="empty">Registra compras y aquí aparece la historia mes a mes.</p>`;
+  h+=`</div></div>`;
+
+  const cats=Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+  h+=`<div><div class="sechead"><h2>En qué se va la plata</h2><span class="tiny muted">últimos 90 días</span></div><div class="card bars">`;
+  if(cats.length){const mx=cats[0][1];
+    h+=cats.map(([c,v])=>`<div class="bar alt"><span class="tiny muted">${esc(c)}</span>
+      <i style="width:${Math.max(2,v/mx*100)}%"></i><span class="money tiny">${money(v)}</span></div>`).join("")
+      +`<p class="tiny muted" style="margin:8px 0 0">Sale de ${conDetalle} compras con detalle por producto.</p>`;}
+  else h+=`<p class="empty">Necesita al menos una compra con ítems. Con el total solo se ve el gasto global.</p>`;
+  h+=`</div></div>`;
+
+  const alertas=S.catalogo.map(p=>({p,v:variacion(p.id),pu:precioAct(p.id)})).filter(x=>Math.abs(x.v)>=.08)
+    .sort((a,b)=>b.v-a.v);
+  if(alertas.length)h+=`<div><div class="sechead"><h2>Cambios de precio</h2><span class="tiny muted">vs. la compra anterior</span></div>
+    <div class="card"><ul class="list">`+alertas.map(x=>`<li><div class="grow">${esc(x.p.n)}</div>
+      <span class="money tiny">${money(x.pu)}/${esc(x.p.un)}</span>
+      <span class="chip ${x.v>0?"up":"down"}">${x.v>0?"▲":"▼"} ${Math.abs(Math.round(x.v*100))}%</span></li>`).join("")+`</ul></div></div>`;
+
+  const top=Object.entries(porProd).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  if(top.length){const mx=top[0][1];
+    h+=`<div><div class="sechead"><h2>Los 10 que más pesan</h2><span class="tiny muted">últimos 90 días</span></div>
+      <div class="card bars">`+top.map(([id,v])=>`<div class="bar"><span class="tiny muted">${esc(prod(id)?.n||id)}</span>
+        <i style="width:${Math.max(2,v/mx*100)}%"></i><span class="money tiny">${money(v)}</span></div>`).join("")+`</div></div>`;}
+  $("#t-gastos").innerHTML=h;
+}
+
+/* ---------- navegación ---------- */
+function render(){
+  if(!S)return;
+  const s=sabado(offW),f=new Date(s);f.setDate(s.getDate()+6);
+  const d=x=>x.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
+  $("#semanaLbl").textContent=(offW===0?"esta semana · ":"")+d(s)+" – "+d(f);
+  $$("nav button").forEach(b=>b.setAttribute("aria-current",String(b.dataset.tab===tab)));
+  $$("main section").forEach(x=>x.hidden=x.id!=="t-"+tab);
+  ({lista:renderLista,menu:renderMenu,compra:renderCompra,recetas:renderRecetas,gastos:renderGastos})[tab]();
+}
+$$("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;verCompra=null;render();});
+$("#prevW").onclick=()=>{offW--;render()};
+$("#nextW").onclick=()=>{offW++;render()};
+$("#hoyW").onclick=()=>{offW=0;render()};
+arrancar();
+
+/* ---------- autocomprobación: abre con #test ---------- */
+if(location.hash==="#test")setTimeout(()=>{
+  const ok=(c,m)=>{if(!c)throw new Error(m)};
+  ok(money(12500)==="$12.500","money");
+  ok(sabado(0).getDay()===6,"sabado cae en sábado");
+  ok(semanaDias().length===7&&semanaDias()[6].getDay()===5,"semana sáb→vie");
+  const k=iso(sabado(0));
+  S.menu[k]={almuerzo:["r-sudado","r-arroz"]};
+  const L=listaSemana(),pollo=L.find(i=>i.p.id==="pollo");
+  ok(pollo&&pollo.cant===2&&pollo.menu,"el menú manda sobre la cantidad semanal");
+  ok(L.find(i=>i.p.id==="arepas")?.cant===20,"lo recurrente entra aunque no esté en el menú");
+  ok(L.every(i=>i.p.freq!=="mes"||!ultimaCompra(i.p.id)||diasEntre(ultimaCompra(i.p.id),k)>=26),"mensual solo si toca");
+  ok(totalCompra({items:[{valor:100},{valor:50}],total:9})===150,"los ítems mandan sobre el total");
+  ok(totalCompra({fecha:"x",total:9})===9,"compra solo con total");
+  delete S.menu[k];render();
+  toast("Autocomprobación OK");
+},600);
+</script>

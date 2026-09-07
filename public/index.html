@@ -1,0 +1,1241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Mercado, menú, recetas y gastos de la Familia Sepúlveda.">
+<meta name="theme-color" content="#7C2D3E">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Mercado Sepúlveda</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root{
+  --bg:#F7F6F3; --surface:#FFFFFF; --sunk:#F0EEE8; --line:#E3E0D8;
+  --ink:#1A1A17; --muted:#79746A;
+  --brand:#7C2D3E; --brand-soft:#F6E9EC; --on-brand:#FFF9FA;
+  --gold:#B0761D; --gold-soft:#FAF0DC;
+  --good:#2F7A55; --bad:#B4462F;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131210; --surface:#1C1A17; --sunk:#242019; --line:#332F29;
+  --ink:#EEEAE2; --muted:#9C958A;
+  --brand:#D4788D; --brand-soft:#3A2129; --on-brand:#1A1013;
+  --gold:#DFA85C; --gold-soft:#332918;
+  --good:#63B98D; --bad:#E08A72;
+}}
+:root[data-theme="dark"]{
+  --bg:#131210; --surface:#1C1A17; --sunk:#242019; --line:#332F29;
+  --ink:#EEEAE2; --muted:#9C958A;
+  --brand:#D4788D; --brand-soft:#3A2129; --on-brand:#1A1013;
+  --gold:#DFA85C; --gold-soft:#332918;
+  --good:#63B98D; --bad:#E08A72;
+}
+body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;margin:0;-webkit-text-size-adjust:100%}
+.serif{font-family:"Instrument Serif",Georgia,serif;font-weight:400;letter-spacing:.005em}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+input,select,textarea,button{font-family:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+dialog::backdrop{background:rgba(15,13,11,.55)}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+.fade{animation:fade .18s ease}@keyframes fade{from{opacity:0;transform:translateY(4px)}}
+</style>
+<script>
+tailwind.config={corePlugins:{preflight:true},theme:{extend:{
+  colors:{bg:"var(--bg)",surface:"var(--surface)",sunk:"var(--sunk)",line:"var(--line)",
+    ink:"var(--ink)",muted:"var(--muted)",brand:"var(--brand)",brandsoft:"var(--brand-soft)",
+    onbrand:"var(--on-brand)",gold:"var(--gold)",goldsoft:"var(--gold-soft)",good:"var(--good)",bad:"var(--bad)"},
+  fontFamily:{sans:['"Instrument Sans"','system-ui','sans-serif'],serif:['"Instrument Serif"','Georgia','serif'],mono:['"JetBrains Mono"','monospace']},
+  borderRadius:{xl2:"14px"}}}};
+</script>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const CAT=["Granos y despensa","Proteína","Verduras","Frutas","Lácteos","Panadería","Bebidas","Aseo","Medicamentos","Perros","Otros"];
+const P=(id,n,cat,un,freq,base)=>({id,n,cat,un,freq,base,precio:0}); // el precio solo nace de una factura real
+const CATALOGO=[
+ P("arroz","Arroz","Granos y despensa","lb","mes",8,3000),
+ P("aceite","Aceite","Granos y despensa","l","mes",2,12000),
+ P("panela","Panela","Granos y despensa","lb","mes",2,3500),
+ P("sal","Sal","Granos y despensa","kg","mes",1,2500),
+ P("azucar","Azúcar","Granos y despensa","lb","mes",2,3000),
+ P("cafe","Café","Granos y despensa","lb","mes",1,12000),
+ P("harina","Harina de maíz","Granos y despensa","kg","mes",1,5500),
+ P("lentejas","Lentejas","Granos y despensa","lb","mes",2,4500),
+ P("frijoles","Fríjoles","Granos y despensa","lb","mes",2,6000),
+ P("garbanzos","Garbanzos","Granos y despensa","lb","mes",1,6000),
+ P("arveja","Arveja","Granos y despensa","lb","mes",1,5000),
+ P("pasta","Pasta","Granos y despensa","u","mes",3,3500),
+ P("salsatom","Salsa de tomate","Granos y despensa","u","mes",1,6000),
+ P("caldocubo","Caldo en cubo","Granos y despensa","u","mes",1,4000),
+ P("atun","Atún","Proteína","u","mes",4,5500),
+ P("pollo","Pollo","Proteína","lb","sem",4,8000),
+ P("carne","Carne de res","Proteína","lb","sem",2,18000),
+ P("molida","Carne molida","Proteína","lb","sem",2,15000),
+ P("cerdo","Cerdo","Proteína","lb","ocas",2,12000),
+ P("pescado","Pescado","Proteína","lb","ocas",2,14000),
+ P("huevos","Huevos","Proteína","u","sem",30,600),
+ P("salchicha","Salchicha","Proteína","u","ocas",8,900),
+ P("papa","Papa","Verduras","lb","sem",6,2500),
+ P("platano","Plátano maduro","Verduras","u","sem",6,1500),
+ P("verde","Plátano verde","Verduras","u","sem",4,1200),
+ P("yuca","Yuca","Verduras","lb","ocas",2,2500),
+ P("auyama","Auyama","Verduras","lb","ocas",2,2500),
+ P("mazorca","Mazorca","Verduras","u","ocas",4,2000),
+ P("tomate","Tomate","Verduras","lb","sem",2,3500),
+ P("cebollal","Cebolla larga","Verduras","manojo","sem",1,2500),
+ P("cebollac","Cebolla cabezona","Verduras","lb","sem",1,3000),
+ P("lechuga","Lechuga","Verduras","u","sem",1,3000),
+ P("zanahoria","Zanahoria","Verduras","lb","sem",1,2500),
+ P("limon","Limón","Verduras","lb","sem",1,3000),
+ P("cilantro","Cilantro","Verduras","manojo","sem",1,1000),
+ P("ajo","Ajo","Verduras","u","mes",1,2000),
+ P("pimenton","Pimentón","Verduras","u","sem",2,1500),
+ P("aguacate","Aguacate","Verduras","u","ocas",2,4000),
+ P("habichuela","Habichuela","Verduras","lb","ocas",1,3500),
+ P("brocoli","Brócoli","Verduras","u","ocas",1,4000),
+ P("repollo","Repollo","Verduras","u","ocas",1,3000),
+ P("banano","Banano","Frutas","lb","sem",2,2500),
+ P("papaya","Papaya","Frutas","lb","sem",2,2500),
+ P("mango","Mango","Frutas","u","sem",3,2000),
+ P("naranja","Naranja","Frutas","lb","sem",3,2500),
+ P("pina","Piña","Frutas","u","ocas",1,6000),
+ P("fresa","Fresa","Frutas","lb","ocas",1,6000),
+ P("mora","Mora","Frutas","lb","ocas",1,5000),
+ P("leche","Leche","Lácteos","l","sem",4,4200),
+ P("queso","Queso","Lácteos","lb","sem",1,12000),
+ P("mantequilla","Mantequilla","Lácteos","u","mes",1,7000),
+ P("crema","Crema de leche","Lácteos","u","ocas",1,5000),
+ P("yogur","Yogur","Lácteos","l","sem",1,7000),
+ P("arepas","Arepas","Panadería","u","sem",20,700),
+ P("pan","Pan","Panadería","u","sem",10,500),
+ P("tortillas","Tortillas de trigo","Panadería","u","ocas",8,900),
+ P("refresco","Refresco en sobre","Bebidas","u","sem",7,700),
+ P("chocolate","Chocolate","Bebidas","u","mes",1,8000),
+ P("jabonloza","Jabón loza","Aseo","u","mes",1,5000),
+ P("detergente","Detergente","Aseo","kg","mes",1,9000),
+ P("papelh","Papel higiénico","Aseo","paca","mes",1,18000),
+ P("limpiador","Limpiador de pisos","Aseo","l","mes",1,7000),
+ P("acetaminofen","Acetaminofén","Medicamentos","caja","ocas",1,4000),
+ P("ibuprofeno","Ibuprofeno","Medicamentos","caja","ocas",1,6000),
+ P("botiquin","Curitas y alcohol","Medicamentos","u","ocas",1,8000),
+ P("concentrado","Concentrado perros","Perros","kg","mes",10,11000),
+ P("snackperro","Snacks perros","Perros","u","mes",2,8000)
+];
+const R=(id,n,tipo,t,ing,pasos,tags,nota)=>({id,n,tipo,t,ing,pasos,tags:tags||[],nota:nota||""});
+const RECETAS=[
+ R("r-pericos","Huevos pericos","desayuno",12,[{p:"huevos",c:6},{p:"tomate",c:.5},{p:"cebollal",c:.3},{p:"arepas",c:4}],
+  ["Pica el tomate y la cebolla larga bien menudos.","Sofríe la cebolla 2 min en aceite, agrega el tomate y deja que suelte el agua, 4 min.","Bate los huevos con sal y échalos encima; revuelve suave hasta que cuajen.","Sirve con las arepas calientes."],["rápido","económico"],
+  "Si el tomate se cocina antes de echar el huevo, no queda aguado."),
+ R("r-huevofr","Huevo frito con arepa y queso","desayuno",8,[{p:"huevos",c:4},{p:"arepas",c:4},{p:"queso",c:.2}],
+  ["Calienta las arepas en el asador o sartén seco hasta que doren.","Fríe los huevos en poquito aceite bien caliente para que el borde quede crocante.","Abre la arepa, pon queso y el huevo encima."],["rápido"]),
+ R("r-caldo","Caldo de costilla","desayuno",45,[{p:"carne",c:1},{p:"papa",c:1.5},{p:"cilantro",c:.5},{p:"cebollal",c:.3},{p:"arepas",c:4}],
+  ["Pon la costilla en agua fría con cebolla larga y sal; hierve y retira la espuma.","Cocina 30 min tapado.","Agrega la papa pelada en trozos y cocina 12 min más.","Apaga y echa cilantro picado. Sirve con arepa."],["económico"]),
+ R("r-changua","Changua","desayuno",15,[{p:"leche",c:.5},{p:"huevos",c:4},{p:"cebollal",c:.3},{p:"cilantro",c:.3},{p:"pan",c:4}],
+  ["Hierve mitad agua mitad leche con cebolla larga y sal.","Baja el fuego y echa los huevos enteros; deja 3 min sin revolver.","Sirve sobre pan del día anterior con cilantro."],["rápido","económico"]),
+ R("r-calentado","Calentado paisa","desayuno",15,[{p:"arroz",c:.5},{p:"frijoles",c:.5},{p:"huevos",c:4},{p:"arepas",c:4}],
+  ["Saltea el arroz del día anterior con los fríjoles en un poco de aceite.","Revuelve a fuego medio hasta que caliente parejo.","Sirve con huevo frito y arepa."],["rápido","económico"],"Es la mejor forma de no botar el arroz que sobra."),
+ R("r-arroz","Arroz blanco","almuerzo",20,[{p:"arroz",c:1},{p:"aceite",c:.05}],
+  ["Sofríe el arroz 1 min en aceite con sal.","Agrega el doble de agua, tapa y sube el fuego hasta que hierva.","Baja al mínimo 15 min sin destapar. Suelta con tenedor."],["base"]),
+ R("r-sudado","Sudado de pollo","almuerzo",40,[{p:"pollo",c:2},{p:"papa",c:2},{p:"tomate",c:.5},{p:"cebollal",c:.3},{p:"arveja",c:.3},{p:"zanahoria",c:.3}],
+  ["Sella el pollo con sal, pimienta y comino en aceite caliente.","Agrega el guiso de tomate y cebolla; cocina 5 min.","Echa papa, zanahoria y arveja, cubre con agua o caldo.","Tapa y cocina 25 min a fuego medio hasta que la papa esté blanda y espese."],["económico"]),
+ R("r-molida","Carne molida guisada","almuerzo",25,[{p:"molida",c:1.5},{p:"tomate",c:.5},{p:"cebollac",c:.3},{p:"ajo",c:.1}],
+  ["Dora la carne suelta a fuego alto para que no suelte agua.","Aparta y haz el guiso con cebolla, ajo y tomate.","Junta todo, sazona y cocina 10 min a fuego bajo."],["rápido","económico"]),
+ R("r-asada","Carne asada","almuerzo",20,[{p:"carne",c:2},{p:"cebollac",c:.2},{p:"limon",c:.2}],
+  ["Adoba la carne con sal, pimienta, ajo y jugo de limón 15 min.","Asa en sartén bien caliente 3 min por lado.","Deja reposar 5 min antes de cortar contra la fibra."]),
+ R("r-lentejas","Lentejas","almuerzo",40,[{p:"lentejas",c:1},{p:"papa",c:1},{p:"zanahoria",c:.3},{p:"cebollal",c:.3},{p:"tomate",c:.3}],
+  ["Remoja las lentejas 1 hora si tienes tiempo (cocinan más rápido).","Haz un guiso de cebolla y tomate en el fondo de la olla.","Agrega lentejas y agua que las cubra dos dedos; cocina 25 min.","Echa papa y zanahoria en cubos, 12 min más."],["económico"]),
+ R("r-frijoles","Fríjoles","almuerzo",90,[{p:"frijoles",c:1},{p:"platano",c:1},{p:"zanahoria",c:.3},{p:"cebollal",c:.3}],
+  ["Remoja los fríjoles desde la noche anterior.","Cocínalos en olla a presión 35 min con el plátano maduro entero.","Aparte haz el guiso y agrégalo; cocina destapado 15 min para que espese."],["económico"],"Rinden para dos almuerzos: haz doble."),
+ R("r-arrozpollo","Arroz con pollo","almuerzo",45,[{p:"arroz",c:1.5},{p:"pollo",c:1.5},{p:"zanahoria",c:.5},{p:"arveja",c:.5},{p:"pimenton",c:1},{p:"cebollac",c:.3}],
+  ["Cocina el pollo en agua con sal y desmenúzalo; guarda el caldo.","Sofríe el guiso con pimentón y zanahoria en cubos.","Agrega el arroz, el pollo y el caldo colado (doble de agua que arroz).","Tapa 18 min a fuego bajo. Deja reposar 5 min."],["económico"],"Un pollo rinde para 4 con arroz; es de los platos más baratos por persona."),
+ R("r-espagueti","Espagueti con carne","almuerzo",30,[{p:"pasta",c:1},{p:"molida",c:1},{p:"salsatom",c:.5},{p:"cebollac",c:.3},{p:"queso",c:.2}],
+  ["Hierve la pasta en agua con sal hasta al dente.","Dora la carne, agrega cebolla y salsa de tomate; cocina 10 min.","Mezcla y sirve con queso rallado encima."],["rápido"]),
+ R("r-papacoc","Papa cocida","almuerzo",20,[{p:"papa",c:2}],["Lava las papas y cocínalas con cáscara en agua con sal 18 min."],["base"]),
+ R("r-tajadas","Tajadas de maduro","almuerzo",12,[{p:"platano",c:3},{p:"aceite",c:.1}],
+  ["Corta el maduro en tajadas diagonales.","Fríe en aceite medio hasta que doren por ambos lados.","Escurre en papel."],["base","rápido"]),
+ R("r-patacon","Patacones","almuerzo",20,[{p:"verde",c:3},{p:"aceite",c:.1}],
+  ["Fríe los trozos de verde 5 min a fuego medio.","Aplástalos y vuélvelos a freír a fuego alto hasta dorar.","Sal al salir."],["base"]),
+ R("r-ensfria","Ensalada fría","almuerzo",10,[{p:"lechuga",c:.5},{p:"tomate",c:.5},{p:"cebollac",c:.2},{p:"zanahoria",c:.3},{p:"limon",c:.2}],
+  ["Ralla la zanahoria, corta lechuga en tiras, tomate en cubos y cebolla en pluma.","Deja la cebolla 5 min en agua con limón para quitarle lo fuerte.","Aliña con limón, aceite, sal y pimienta al momento de servir."],["rápido","económico"]),
+ R("r-ensrepollo","Ensalada de repollo y zanahoria","almuerzo",10,[{p:"repollo",c:.5},{p:"zanahoria",c:.5},{p:"limon",c:.2}],
+  ["Corta el repollo en tiras finas y ralla la zanahoria.","Aliña con limón, sal y un toque de aceite."],["económico","rápido"],"Dura 3 días en la nevera; sale más barata que la lechuga."),
+ R("r-jugo","Jugo de sobre","almuerzo",5,[{p:"refresco",c:1},{p:"azucar",c:.15}],
+  ["Disuelve el sobre en 2 litros de agua fría.","Ajusta el azúcar al gusto."],["rápido"]),
+ R("r-jugonat","Jugo natural de fruta","almuerzo",8,[{p:"mango",c:2},{p:"azucar",c:.1}],
+  ["Licúa la fruta con agua fría y azúcar.","Cuela si la fruta tiene fibra."],["rápido"],"Cuando la fruta está en cosecha sale más barato que el sobre."),
+ R("r-ensfrutas","Ensalada de frutas","cena",15,[{p:"banano",c:1},{p:"papaya",c:1},{p:"mango",c:2},{p:"naranja",c:1},{p:"yogur",c:.3}],
+  ["Corta todas las frutas en cubos parejos.","Echa el jugo de la naranja encima para que el banano no se oxide.","Sirve con yogur."],["rápido"]),
+ R("r-arepaqueso","Arepa con queso","cena",10,[{p:"arepas",c:4},{p:"queso",c:.4}],
+  ["Asa las arepas hasta que doren.","Ábrelas y rellena con queso; vuelve al calor 2 min para que derrita."],["rápido","económico"]),
+ R("r-choco","Chocolate con pan","cena",10,[{p:"chocolate",c:.2},{p:"leche",c:1},{p:"pan",c:6},{p:"queso",c:.2}],
+  ["Hierve la leche con la pastilla de chocolate.","Bate con molinillo hasta que espume.","Sirve con pan y queso."],["rápido","económico"]),
+ R("r-sopaverduras","Sopa de verduras","cena",30,[{p:"papa",c:1},{p:"zanahoria",c:.5},{p:"habichuela",c:.5},{p:"mazorca",c:2},{p:"cilantro",c:.3}],
+  ["Pon a hervir agua con caldo o hueso si tienes.","Agrega las verduras de la más dura a la más blanda.","Cocina 20 min y termina con cilantro."],["económico"]),
+ R("r-cremaauyama","Crema de auyama","cena",30,[{p:"auyama",c:2},{p:"cebollac",c:.3},{p:"leche",c:.5},{p:"papa",c:.5}],
+  ["Sofríe la cebolla, agrega auyama y papa en cubos.","Cubre con agua y cocina 20 min.","Licúa con la leche, vuelve a la olla y ajusta sal."],["económico"]),
+ R("r-perrocasero","Comida casera para los perros","cena",30,[{p:"arroz",c:1},{p:"pollo",c:1},{p:"zanahoria",c:.5},{p:"auyama",c:.5}],
+  ["Cocina el arroz sin sal.","Cocina el pollo sin condimentos y desmenúzalo.","Cocina zanahoria y auyama al vapor y pica.","Mezcla en frío. Sin cebolla, sin ajo, sin sal."],["perros"],
+  "Complemento, no reemplazo del concentrado. Confirma porciones con el veterinario."),
+ R("r-tacos","Tacos de carne","cena",25,[{p:"tortillas",c:8},{p:"molida",c:1},{p:"cebollac",c:.3},{p:"tomate",c:.5},{p:"limon",c:.3},{p:"queso",c:.3}],
+  ["Dora la carne con cebolla, comino y pimentón en polvo.","Pica tomate, cebolla y cilantro para el pico de gallo con limón.","Calienta las tortillas en sartén seco.","Arma y sirve con queso."],["nuevo","rápido"]),
+ R("r-salteado","Salteado asiático de pollo","cena",25,[{p:"pollo",c:1.5},{p:"brocoli",c:1},{p:"zanahoria",c:.5},{p:"pimenton",c:1},{p:"arroz",c:1},{p:"ajo",c:.2}],
+  ["Corta el pollo en tiras y séllalo a fuego alto; aparta.","En el mismo wok saltea las verduras 4 min: deben quedar crocantes.","Vuelve el pollo, agrega salsa de soya y ajo.","Sirve sobre arroz."],["nuevo","rápido"],"Es la forma más fácil de que los niños coman verdura."),
+ R("r-pizza","Pizza casera","cena",50,[{p:"harina",c:.5},{p:"salsatom",c:.5},{p:"queso",c:.8},{p:"pimenton",c:1},{p:"salchicha",c:4}],
+  ["Amasa harina de trigo, agua tibia, levadura, sal y aceite; deja crecer 30 min.","Estira sobre lata aceitada.","Salsa, queso y lo que haya en la nevera.","Horno bien caliente 12 min."],["nuevo"],"Noche de pizza sale a menos de la mitad de una domiciliaria."),
+ R("r-wraps","Wraps de pollo","cena",20,[{p:"tortillas",c:8},{p:"pollo",c:1},{p:"lechuga",c:.5},{p:"tomate",c:.5},{p:"queso",c:.3}],
+  ["Saltea el pollo en tiras con sal, ajo y pimentón.","Arma con lechuga, tomate y queso.","Enrolla apretado y sella 1 min en sartén."],["nuevo","rápido"]),
+ R("r-tortillaesp","Tortilla española","cena",30,[{p:"huevos",c:6},{p:"papa",c:1.5},{p:"cebollac",c:.5}],
+  ["Corta la papa en láminas finas y confítala a fuego bajo en aceite con la cebolla, 15 min.","Escurre y mezcla con los huevos batidos y sal.","Cuaja en sartén 4 min por lado, volteando con un plato."],["nuevo","económico"]),
+ R("r-currygarb","Curry de garbanzos","cena",30,[{p:"garbanzos",c:1},{p:"tomate",c:.5},{p:"cebollac",c:.3},{p:"leche",c:.3},{p:"arroz",c:1},{p:"ajo",c:.2}],
+  ["Sofríe cebolla y ajo, agrega curry en polvo y deja que despierte 30 seg.","Echa tomate y cocina hasta deshacer.","Agrega garbanzos cocidos y leche de coco o leche; 15 min a fuego bajo.","Sirve con arroz."],["nuevo","económico"],"Almuerzo sin carne que sale muy barato y llena."),
+ R("r-hamburguesa","Hamburguesas caseras","cena",30,[{p:"molida",c:1.5},{p:"pan",c:4},{p:"lechuga",c:.3},{p:"tomate",c:.3},{p:"queso",c:.3},{p:"cebollac",c:.3}],
+  ["Mezcla la carne con cebolla rallada, sal y pimienta; forma 4 discos.","Sella 3 min por lado sin aplastar.","Tuesta el pan, arma con queso, lechuga y tomate."],["nuevo"]),
+ R("r-ajiaco","Ajiaco","cena",70,[{p:"pollo",c:2},{p:"papa",c:4},{p:"mazorca",c:4},{p:"crema",c:1},{p:"cilantro",c:.5}],
+  ["Cocina el pollo con cebolla larga; desmenuza y guarda el caldo.","En el caldo cocina tres tipos de papa: la criolla se deshace y espesa.","Agrega mazorcas partidas y guascas; 20 min.","Sirve con crema, alcaparras y aguacate."],["nuevo"],"Domingo familiar. Necesitas guascas."),
+ R("r-empanadas","Empanadas","cena",60,[{p:"harina",c:.5},{p:"papa",c:1.5},{p:"molida",c:.8},{p:"aceite",c:.4},{p:"cebollal",c:.3}],
+  ["Guisa la carne con la papa cocida y machacada.","Amasa la harina de maíz con agua, sal y color; extiende bolitas entre plástico.","Rellena, cierra y fríe en aceite caliente hasta dorar."],["nuevo","económico"]),
+ R("r-pastapesto","Pasta al ajillo","cena",20,[{p:"pasta",c:1},{p:"ajo",c:.3},{p:"aceite",c:.1},{p:"queso",c:.3},{p:"cilantro",c:.3}],
+  ["Hierve la pasta y guarda una taza del agua de cocción.","Dora láminas de ajo en aceite a fuego bajo, sin quemar.","Mezcla la pasta con el ajo y un chorrito del agua para que ligue.","Queso rallado y perejil o cilantro."],["nuevo","rápido","económico"])
+];
+const COMIDAS=[["desayuno","Desayuno"],["almuerzo","Almuerzo"],["cena","Cena"]];
+const DIAS=["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const DIAS_C=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const SEED={catalogo:CATALOGO,recetas:RECETAS,menu:{},lista:{},extras:{},ajustes:{},probadas:[]};
+</script>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo,useRef,useCallback}=React;
+
+/* ---------- utilidades ---------- */
+const money=n=>"$"+Math.round(n||0).toLocaleString("es-CO");
+const kmoney=n=>Math.abs(n)>=1e6?"$"+(n/1e6).toFixed(1).replace(".",",")+"M":Math.abs(n)>=1000?"$"+Math.round(n/1000)+"k":money(n);
+const fmt=n=>Number(n||0).toLocaleString("es-CO",{maximumFractionDigits:2});
+const uid=p=>p+"-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const iso=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const hoy=()=>iso(new Date());
+const norm=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+function sabado(off=0){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-((d.getDay()+1)%7)+off*7);return d;}
+function semanaDias(off){const s=sabado(off);return [...Array(7)].map((_,i)=>{const d=new Date(s);d.setDate(s.getDate()+i);return d;});}
+const diasEntre=(a,b)=>Math.round((new Date(b)-new Date(a))/864e5);
+const mesNom=m=>new Date(m+"-02T12:00").toLocaleDateString("es-CO",{month:"short",year:"2-digit"});
+const fechaCorta=d=>new Date(d+"T12:00").toLocaleDateString("es-CO",{day:"numeric",month:"short"});
+const totalCompra=c=>c.items&&c.items.length?c.items.reduce((s,i)=>s+(+i.valor||0),0):(+c.total||0);
+const yt=n=>"https://www.youtube.com/results?search_query="+encodeURIComponent(n+" receta paso a paso");
+const gg=n=>"https://www.google.com/search?q="+encodeURIComponent("receta "+n);
+function parseMoneyCO(s){
+  let t=String(s).replace(/[^\d.,]/g,"");
+  if(/,\d{1,2}$/.test(t)) t=t.replace(/\./g,"").replace(",",".");
+  else t=t.replace(/[.,]/g,"");
+  return parseFloat(t)||0;
+}
+
+/* ---------- iconos (trazo, sin emojis) ---------- */
+const PATHS={
+  home:<><path d="M3 10.4 12 3l9 7.4"/><path d="M5.5 9.6V21h13V9.6"/><path d="M9.5 21v-6h5v6"/></>,
+  basket:<><path d="M3 8h18l-1.6 11.2A2 2 0 0 1 17.4 21H6.6a2 2 0 0 1-2-1.8L3 8Z"/><path d="M8.5 8 12 3l3.5 5"/><path d="M9.5 12.5v4M14.5 12.5v4"/></>,
+  calendar:<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></>,
+  receipt:<><path d="M5 3h14v18l-2.3-1.6L14.4 21 12 19.4 9.6 21l-2.3-1.6L5 21Z"/><path d="M9 8h6M9 12h6"/></>,
+  pot:<><path d="M4 9h16v7a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4Z"/><path d="M2 9h20"/><path d="M8 5.5c0-1 1-1.5 1-2.5M12 5.5c0-1 1-1.5 1-2.5M16 5.5c0-1 1-1.5 1-2.5"/></>,
+  chart:<><path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="7" rx="1"/><rect x="10.2" y="6" width="3.5" height="12" rx="1"/><rect x="15.5" y="14" width="3.5" height="4" rx="1"/></>,
+  plus:<><path d="M12 5v14M5 12h14"/></>,
+  check:<><path d="M4 12.5 9.5 18 20 6.5"/></>,
+  x:<><path d="M6 6 18 18M18 6 6 18"/></>,
+  edit:<><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5 17.5 9.5"/></>,
+  trash:<><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></>,
+  left:<><path d="M15 5l-7 7 7 7"/></>,
+  right:<><path d="M9 5l7 7-7 7"/></>,
+  upload:<><path d="M12 16V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3"/></>,
+  file:<><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></>,
+  link:<><path d="M14 11a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1"/><path d="M10 13a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1"/></>,
+  up:<><path d="M4 17 10 11l4 4 6-6"/><path d="M15 9h5v5"/></>,
+  down:<><path d="M4 7 10 13l4-4 6 6"/><path d="M15 15h5v-5"/></>,
+  dog:<><path d="M11.5 21a5.5 5.5 0 0 0 5.5-5.5V10l2.5-2v-4l-3.5 2.5h-9L3.5 4v4L6 10v5.5A5.5 5.5 0 0 0 11.5 21Z"/><path d="M9.5 12h.01M13.5 12h.01M10.5 16h2"/></>,
+  clock:<><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></>,
+  users:<><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.6M17 20a6 6 0 0 0-1.6-4"/></>,
+  spark:<><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/><path d="M18.5 16.5 19 18l1.5.5L19 19l-.5 1.5L18 19l-1.5-.5L18 18Z"/></>,
+  alert:<><path d="M12 4 21 19H3Z"/><path d="M12 10v4M12 17h.01"/></>,
+  search:<><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></>,
+  wallet:<><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18v3"/><path d="M3 7.5V18a2.5 2.5 0 0 0 2.5 2.5H19a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2H5.5"/><path d="M17 14h.01"/></>,
+  bag:<><path d="M6 8h12l1 12H5Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></>
+};
+const CATCOL={"Granos y despensa":"#B0761D","Proteína":"#A6452F","Verduras":"#3E7A4A","Frutas":"#C7772A",
+ "Lácteos":"#7C6AA8","Panadería":"#9A6B33","Bebidas":"#2F7A85","Aseo":"#3D74A8","Medicamentos":"#6E8F3A",
+ "Perros":"#8C5A3C","Otros":"#6C7268"};
+const GLIFOS={
+ "Granos y despensa":<><path d="M4 12h16a8 8 0 0 1-8 8 8 8 0 0 1-8-8Z"/><path d="M9 8.5c0-2 1.5-3 3-4.5 1.5 1.5 3 2.5 3 4.5"/></>,
+ "Proteína":<><path d="M15.5 4.5a4 4 0 0 1 4 6.5l-7 7-3.5-3.5 7-7a4 4 0 0 1-.5-3Z"/><path d="M9 14.5 5.5 18l-1.5 2 2-1.5L9.5 15"/></>,
+ "Verduras":<><path d="M11 20c-4-2-6-6-5.5-10.5C10 9 14 11 15.5 15"/><path d="M15 15c3-1 5-4 5-8-4 0-7 1-8.5 3.5"/><path d="M12 21c0-4 1-7 3-9"/></>,
+ "Frutas":<><path d="M12 8c-3.5-2.5-8 0-8 5s4 8 6 8c1 0 1.3-.6 2-.6s1 .6 2 .6c2 0 6-3 6-8s-4.5-7.5-8-5Z"/><path d="M12 8V4.5M12 4.5c1.5 0 2.5-1 3-2"/></>,
+ "Lácteos":<><path d="M8 3h8v3l2 4v11H6V10l2-4Z"/><path d="M8 6h8M10 14h4"/></>,
+ "Panadería":<><path d="M4 13c0-4 3.5-7 8-7s8 3 8 7-3.5 5-8 5-8-1-8-5Z"/><path d="M9 9.5 7.5 16M12 9l-.5 7M15 9.5l1.5 6.5"/></>,
+ "Bebidas":<><path d="M6 4h12l-1.5 15a2 2 0 0 1-2 1.8H9.5a2 2 0 0 1-2-1.8Z"/><path d="M6.6 10h10.8"/></>,
+ "Aseo":<><path d="M9 8h6l1 13H8Z"/><path d="M10 8V5h4v3"/><path d="M14 3h4M18 3v4h-2"/></>,
+ "Medicamentos":<><rect x="3" y="8.5" width="18" height="7" rx="3.5"/><path d="M12 8.5v7"/></>,
+ "Perros":<><ellipse cx="12" cy="16" rx="4" ry="3.5"/><ellipse cx="6.5" cy="10" rx="2" ry="2.6"/><ellipse cx="17.5" cy="10" rx="2" ry="2.6"/><ellipse cx="10" cy="6.5" rx="1.8" ry="2.4"/><ellipse cx="14" cy="6.5" rx="1.8" ry="2.4"/></>,
+ "Otros":<><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5Z"/><path d="M4 8.5 12 13l8-4.5M12 13v7"/></>};
+const Glifo=({cat,size=34})=>{
+  const c=CATCOL[cat]||CATCOL["Otros"];
+  return (<span className="shrink-0 grid place-items-center rounded-lg" aria-hidden="true"
+      style={{width:size,height:size,color:c,background:"color-mix(in srgb,"+c+" 14%,transparent)"}}>
+    <svg width={size*.62} height={size*.62} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{GLIFOS[cat]||GLIFOS["Otros"]}</svg></span>);
+};
+const Icon=({n,size=18,className=""})=>(
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+       strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{PATHS[n]}</svg>);
+
+/* ---------- piezas visuales ---------- */
+const Card=({children,className="",...p})=>(
+  <div className={"bg-surface border border-line rounded-xl2 "+className} {...p}>{children}</div>);
+const Btn=({variant="ghost",icon,children,className="",...p})=>{
+  const base="inline-flex items-center gap-2 rounded-lg font-semibold text-sm px-3.5 py-2 transition-colors disabled:opacity-40";
+  const v={primary:"bg-brand text-onbrand hover:opacity-90",
+           soft:"bg-brandsoft text-brand hover:brightness-95",
+           ghost:"border border-line text-ink hover:bg-sunk",
+           bare:"text-muted hover:text-ink px-2 py-1"}[variant];
+  return <button className={base+" "+v+" "+className} {...p}>{icon&&<Icon n={icon} size={16}/>}{children}</button>;
+};
+const Label=({children,className=""})=>(
+  <div className={"text-[11px] uppercase tracking-[.12em] font-bold text-muted "+className}>{children}</div>);
+const Chip=({tone="n",children})=>{
+  const t={n:"bg-sunk text-muted",up:"bg-[color-mix(in_srgb,var(--bad)_16%,transparent)] text-bad",
+    down:"bg-[color-mix(in_srgb,var(--good)_16%,transparent)] text-good",
+    gold:"bg-goldsoft text-gold",brand:"bg-brandsoft text-brand"}[tone];
+  return <span className={"inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap "+t}>{children}</span>;
+};
+const Tile=({label,value,sub,tone})=>(
+  <Card className="p-4">
+    <Label>{label}</Label>
+    <div className={"serif text-[27px] leading-tight mt-1 "+(tone==="brand"?"text-brand":tone==="gold"?"text-gold":"")}>{value}</div>
+    {sub&&<div className="text-xs text-muted mt-0.5">{sub}</div>}
+  </Card>);
+const Empty=({children})=><div className="text-sm text-muted text-center py-8 px-4">{children}</div>;
+const Field=({label,children,hint})=>(
+  <label className="flex flex-col gap-1.5">
+    <Label>{label}</Label>{children}
+    {hint&&<span className="text-xs text-muted">{hint}</span>}
+  </label>);
+const inputCls="w-full bg-surface border border-line rounded-lg px-3 py-2 text-sm text-ink";
+const Modal=({title,children,onClose,footer,wide})=>{
+  const ref=useRef(null);
+  useEffect(()=>{const d=ref.current;d.showModal();const h=e=>{e.preventDefault();onClose();};d.addEventListener("cancel",h);return()=>d.removeEventListener("cancel",h);},[]);
+  return (
+    <dialog ref={ref} className={"bg-surface text-ink rounded-2xl border border-line p-0 w-[94vw] "+(wide?"max-w-2xl":"max-w-md")}>
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-line sticky top-0 bg-surface">
+        <h2 className="serif text-xl">{title}</h2>
+        <button onClick={onClose} className="text-muted hover:text-ink p-1" aria-label="Cerrar"><Icon n="x"/></button>
+      </div>
+      <div className="px-5 py-4 max-h-[65vh] overflow-auto flex flex-col gap-3.5">{children}</div>
+      {footer&&<div className="px-5 py-3 border-t border-line flex justify-end gap-2 bg-surface sticky bottom-0">{footer}</div>}
+    </dialog>);
+};
+
+/* ---------- datos: sincroniza celular/PC, con respaldo local ---------- */
+const LS={g:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},
+          s:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function useDatos(aviso){
+  const [S,setS]=useState(null);
+  const [compras,setCompras]=useState([]);
+  const [sync,setSync]=useState("local");
+  const db=useRef(null), timer=useRef(null);
+  useEffect(()=>{
+    let vivo=true;
+    (async()=>{
+      let d=null; try{ d=await window.claude.use("db"); }catch(e){ d=null; }
+      if(!vivo)return; db.current=d;
+      if(d){
+        setSync("nube");
+        d.doc("app/config").onSnapshot(s=>{
+          if(!s.exists){const n=structuredClone(SEED);d.doc("app/config").set(n).catch(()=>{});setS(n);}
+          else setS({...structuredClone(SEED),...s.data()});
+        },e=>{setSync("local");aviso("Sin sincronización: "+e.code);});
+        d.collection("compras").onSnapshot(s=>setCompras(
+          s.docs.map(x=>({id:x.id,...x.data()})).sort((a,b)=>a.fecha<b.fecha?1:-1)),()=>{});
+      }else{
+        setS({...structuredClone(SEED),...LS.g("ff2-cfg",{})});
+        setCompras(LS.g("ff2-compras",[]));
+      }
+    })();
+    return()=>{vivo=false};
+  },[]);
+  const guardar=useCallback(fn=>{
+    setS(prev=>{
+      const n=fn(structuredClone(prev));
+      clearTimeout(timer.current);
+      timer.current=setTimeout(()=>{
+        if(db.current) db.current.doc("app/config").set(n).catch(e=>aviso("No se guardó: "+e.code));
+        else LS.s("ff2-cfg",n);
+      },300);
+      return n;
+    });
+  },[]);
+  const guardarCompra=useCallback(c=>{
+    setCompras(prev=>{
+      const n=[...prev.filter(x=>x.id!==c.id),c].sort((a,b)=>a.fecha<b.fecha?1:-1);
+      if(!db.current) LS.s("ff2-compras",n); return n;});
+    if(db.current) db.current.doc("compras/"+c.id).set(c).catch(e=>aviso("No se guardó: "+e.code));
+  },[]);
+  const borrarCompra=useCallback(id=>{
+    setCompras(prev=>{const n=prev.filter(x=>x.id!==id);if(!db.current)LS.s("ff2-compras",n);return n;});
+    if(db.current) db.current.doc("compras/"+id).delete().catch(()=>{});
+  },[]);
+  return {S,compras,sync,guardar,guardarCompra,borrarCompra};
+}
+
+/* ---------- cálculos ---------- */
+function useCalculos(S,compras,offW){
+  return useMemo(()=>{
+    if(!S)return null;
+    const prod=id=>S.catalogo.find(p=>p.id===id);
+    const rec=id=>S.recetas.find(r=>r.id===id);
+    const hist={};
+    compras.forEach(c=>(c.items||[]).forEach(i=>{
+      if(!(+i.cant>0)||!(+i.valor>0))return;
+      (hist[i.p]=hist[i.p]||[]).push({f:c.fecha,pu:i.valor/i.cant});}));
+    Object.values(hist).forEach(h=>h.sort((a,b)=>a.f<b.f?-1:1));
+    const precio=id=>hist[id]?.length?hist[id][hist[id].length-1].pu:null;
+    const ultima=id=>hist[id]?.length?hist[id][hist[id].length-1].f:null;
+    const varia=id=>{const h=hist[id]||[];if(h.length<2)return 0;const a=h[h.length-2].pu,b=h[h.length-1].pu;return a?(b-a)/a:0;};
+
+    const sk=iso(sabado(offW)), aj=S.ajustes?.[sk]||{}, need={};
+    const add=(pid,c)=>{const p=prod(pid);if(!p)return;(need[pid]=need[pid]||{p,cant:0}).cant+=c;};
+    semanaDias(offW).forEach(d=>{const m=S.menu[iso(d)]||{};
+      COMIDAS.forEach(([k])=>(m[k]||[]).forEach(rid=>{const r=rec(rid);if(r)r.ing.forEach(i=>add(i.p,i.c));}));});
+    const deMenu=new Set(Object.keys(need));
+    S.catalogo.forEach(p=>{
+      if(need[p.id])return;
+      if(p.freq==="sem")add(p.id,p.base);
+      else if(p.freq==="mes"){const u=ultima(p.id);if(!u||diasEntre(u,sk)>=26)add(p.id,p.base);}});
+    (S.extras?.[sk]||[]).forEach(e=>add(e.p,e.c));
+    const lista=Object.values(need).map(x=>({...x,cant:aj[x.p.id]??x.cant,menu:deMenu.has(x.p.id),
+        mensual:x.p.freq==="mes"&&!deMenu.has(x.p.id),precio:precio(x.p.id),varia:varia(x.p.id)}))
+      .sort((a,b)=>CAT.indexOf(a.p.cat)-CAT.indexOf(b.p.cat)||a.p.n.localeCompare(b.p.n));
+    const sum=arr=>arr.reduce((s,i)=>s+(i.precio!=null?i.cant*i.precio:0),0);
+    const listaTotal=sum(lista), costoMenu=sum(lista.filter(i=>i.menu));
+    const sinPrecio=lista.filter(i=>i.precio==null).length;
+
+    const porMes={};compras.forEach(c=>porMes[c.fecha.slice(0,7)]=(porMes[c.fecha.slice(0,7)]||0)+totalCompra(c));
+    const meses=Object.keys(porMes).sort();
+    const mesAct=hoy().slice(0,7), cerrados=meses.filter(m=>m<mesAct);
+    const y=cerrados.map(m=>porMes[m]);
+    let pred=null, tendencia=0, banda=0;
+    if(y.length>=2){
+      const n=y.length, sx=(n-1)*n/2, sxx=y.reduce((s,_,i)=>s+i*i,0), sy=y.reduce((a,b)=>a+b,0);
+      const sxy=y.reduce((s,v,i)=>s+i*v,0);
+      const b=(n*sxy-sx*sy)/(n*sxx-sx*sx||1), a=(sy-b*sx)/n;
+      pred=Math.max(0,a+b*n); tendencia=sy/n?b/(sy/n):0;
+      const res=y.map((v,i)=>v-(a+b*i));
+      banda=Math.sqrt(res.reduce((s,r)=>s+r*r,0)/n)||pred*.1;
+    }else if(y.length===1){pred=y[0];banda=y[0]*.15;}
+    const d=new Date(),diaMes=d.getDate(),diasMes=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    const gastadoMes=porMes[mesAct]||0;
+    const proyMes=diaMes>=4?gastadoMes/diaMes*diasMes:(pred??gastadoMes);
+    if(pred===null&&compras.length){const sem=compras.filter(c=>c.fecha>=iso(new Date(Date.now()-56*864e5)));
+      pred=sem.reduce((s,c)=>s+totalCompra(c),0)/8*4.33;banda=pred*.2;}
+
+    const d90=iso(new Date(Date.now()-90*864e5)), rec90=compras.filter(c=>c.fecha>=d90);
+    const porCat={},porProd={};
+    rec90.forEach(c=>(c.items||[]).forEach(i=>{const p=prod(i.p);if(!p)return;
+      porCat[p.cat]=(porCat[p.cat]||0)+(+i.valor||0);porProd[p.id]=(porProd[p.id]||0)+(+i.valor||0);}));
+    const perros=rec90.reduce((s,c)=>s+(c.items||[]).filter(i=>prod(i.p)?.cat==="Perros").reduce((a,i)=>a+(+i.valor||0),0),0);
+    const conDetalle=rec90.filter(c=>c.items?.length).length;
+    const infl=Object.keys(hist).filter(k=>hist[k].length>=2)
+      .map(k=>{const h=hist[k];return (h[h.length-1].pu-h[0].pu)/h[0].pu;});
+    const inflacion=infl.length?infl.reduce((a,b)=>a+b,0)/infl.length:0;
+    const alertas=S.catalogo.map(p=>({p,v:varia(p.id),pu:precio(p.id)})).filter(x=>Math.abs(x.v)>=.08).sort((a,b)=>b.v-a.v);
+    const promSem=compras.filter(c=>c.fecha>=iso(new Date(Date.now()-56*864e5))).reduce((s,c)=>s+totalCompra(c),0)/8;
+
+    return {prod,rec,precio,ultima,varia,hist,lista,listaTotal,costoMenu,sinPrecio,sk,
+      porMes,meses,mesAct,gastadoMes,proyMes,pred,banda,tendencia,promSem,
+      porCat,porProd,perros,conDetalle,inflacion,alertas};
+  },[S,compras,offW]);
+}
+
+/* ---------- lectura de facturas ---------- */
+const ALIAS={pechuga:"pollo",muslo:"pollo",pierna:"pollo",pernil:"pollo",gallina:"pollo",
+ res:"carne",bistec:"carne",sobrebarriga:"carne",costilla:"carne",molida:"molida",
+ huevo:"huevos",cubeta:"huevos",leche:"leche",queso:"queso",yogurt:"yogur",
+ cebolla:"cebollac",junca:"cebollal",larga:"cebollal",tomate:"tomate",papa:"papa",
+ platano:"platano",maduro:"platano",banano:"banano",arroz:"arroz",aceite:"aceite",
+ panela:"panela",azucar:"azucar",lenteja:"lentejas",frijol:"frijoles",arveja:"arveja",
+ arepa:"arepas",pan:"pan",atun:"atun",papel:"papelh",higienico:"papelh",
+ detergente:"detergente",jabon:"jabonloza",concentrado:"concentrado",dogchow:"concentrado",
+ zanahoria:"zanahoria",lechuga:"lechuga",limon:"limon",naranja:"naranja",mango:"mango",
+ papaya:"papaya",pina:"pina",yuca:"yuca",cerdo:"cerdo",salchicha:"salchicha",pasta:"pasta",
+ espagueti:"pasta",cafe:"cafe",chocolate:"chocolate",harina:"harina",sal:"sal",ajo:"ajo",
+ pimenton:"pimenton",cilantro:"cilantro",aguacate:"aguacate",refresco:"refresco",fruti:"refresco"};
+function emparejar(desc,catalogo){
+  const d=norm(desc);
+  for(const p of catalogo){const w=norm(p.n).split(" ")[0];if(w.length>=5&&d.includes(w))return p.id;}
+  for(const k in ALIAS){if(d.includes(k)&&catalogo.some(p=>p.id===ALIAS[k]))return ALIAS[k];}
+  return "";
+}
+function lineasDeTexto(texto,catalogo){
+  const out=[];
+  texto.split(/\r?\n/).forEach(raw=>{
+    const l=raw.trim();
+    if(l.length<6||/^(total|subtotal|iva|cambio|efectivo|nit|factura|cliente|direccion|cajero|fecha|resolucion|gracias)/i.test(norm(l)))return;
+    const nums=l.match(/\d[\d.,]*/g)||[];
+    if(!nums.length)return;
+    const valor=parseMoneyCO(nums[nums.length-1]);
+    if(valor<300)return;
+    let cant=1;
+    if(nums.length>=2){const c=parseFloat(nums[0].replace(/\./g,"").replace(",","."));if(c>0&&c<200)cant=c;}
+    const desc=l.slice(0,l.search(/\d[\d.,]*\s*$/)>0?l.search(/\d[\d.,]*\s*$/):l.length)
+      .replace(/[\d.,]+\s*$/,"").replace(/\s{2,}/g," ").trim();
+    if(desc.length<3)return;
+    out.push({desc,cant,valor,p:emparejar(desc,catalogo)});
+  });
+  return out;
+}
+function leerXmlDian(texto,catalogo){
+  let doc=new DOMParser().parseFromString(texto,"application/xml");
+  const cdata=doc.getElementsByTagName("cbc:Description")[0];
+  if(doc.documentElement.nodeName.includes("AttachedDocument")&&cdata&&/<Invoice/i.test(cdata.textContent))
+    doc=new DOMParser().parseFromString(cdata.textContent,"application/xml");
+  const g=(el,t)=>el?.getElementsByTagName(t)[0]?.textContent?.trim()||"";
+  const filas=[...doc.getElementsByTagName("cac:InvoiceLine")].map(l=>{
+    const desc=g(l.getElementsByTagName("cac:Item")[0],"cbc:Description")||g(l,"cbc:Description");
+    return {desc,cant:parseFloat(g(l,"cbc:InvoicedQuantity"))||1,
+            valor:parseFloat(g(l,"cbc:LineExtensionAmount"))||0,p:emparejar(desc,catalogo)};
+  }).filter(f=>f.valor>0);
+  return {filas,fecha:g(doc.documentElement,"cbc:IssueDate")||"",
+    tienda:g(doc.getElementsByTagName("cac:AccountingSupplierParty")[0],"cbc:RegistrationName")||"",
+    total:parseFloat(g(doc.getElementsByTagName("cac:LegalMonetaryTotal")[0],"cbc:PayableAmount"))||0};
+}
+async function textoDePdf(file){
+  const buf=await file.arrayBuffer();
+  if(window.pdfjsLib&&pdfjsLib.GlobalWorkerOptions)
+    pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+  let txt="";
+  for(let i=1;i<=pdf.numPages;i++){
+    const c=await (await pdf.getPage(i)).getTextContent();
+    const filas={};
+    c.items.forEach(it=>{const y=Math.round(it.transform[5]);(filas[y]=filas[y]||[]).push(it.str);});
+    txt+=Object.keys(filas).sort((a,b)=>b-a).map(y=>filas[y].join(" ")).join("\n")+"\n";
+  }
+  return txt;
+}
+
+/* ---------- gráfico de meses y pronóstico ---------- */
+function GraficoMeses({K}){
+  const reales=K.meses.slice(-6).map(m=>({k:m,v:K.porMes[m],t:m===K.mesAct?"parcial":"real"}));
+  const datos=[...reales];
+  if(K.pred!=null){
+    const d=new Date(K.mesAct+"-15T12:00");d.setMonth(d.getMonth()+1);
+    datos.push({k:iso(d).slice(0,7),v:K.pred,t:"pred"});
+  }
+  if(!datos.length)return <Empty>Registra compras y aquí verás la historia y el pronóstico.</Empty>;
+  const W=340,H=150,pad=26,base=H-24,top=16;
+  const mx=Math.max(...datos.map(d=>Math.max(d.v,d.t==="parcial"?K.proyMes:0)),1);
+  const bw=(W-pad*2)/datos.length, w=Math.min(34,bw*.6);
+  const y=v=>base-(v/mx)*(base-top);
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" role="img" aria-label="Gasto por mes y pronóstico">
+      <line x1={pad-8} y1={base} x2={W-pad+8} y2={base} stroke="var(--line)" strokeWidth="1"/>
+      {datos.map((d,i)=>{
+        const cx=pad+bw*i+bw/2, x=cx-w/2;
+        const proy=d.t==="parcial"?K.proyMes:null;
+        return (<g key={d.k}>
+          {proy&&proy>d.v&&<rect x={x} y={y(proy)} width={w} height={Math.max(0,y(d.v)-y(proy))}
+            fill="none" stroke="var(--gold)" strokeWidth="1.2" strokeDasharray="3 2" rx="2"/>}
+          <rect x={x} y={y(d.v)} width={w} height={Math.max(1.5,base-y(d.v))} rx="2"
+            fill={d.t==="pred"?"none":"var(--brand)"} opacity={d.t==="parcial"?.55:1}
+            stroke={d.t==="pred"?"var(--gold)":"none"} strokeWidth="1.4" strokeDasharray={d.t==="pred"?"4 3":undefined}/>
+          <text x={cx} y={y(proy&&proy>d.v?proy:d.v)-5} textAnchor="middle" fontSize="9.5"
+            className="mono" fill={d.t==="pred"?"var(--gold)":"var(--muted)"}>{kmoney(proy&&proy>d.v?proy:d.v)}</text>
+          <text x={cx} y={base+13} textAnchor="middle" fontSize="9" fill="var(--muted)">{mesNom(d.k)}</text>
+        </g>);})}
+    </svg>);
+}
+function Barras({filas,tone="brand"}){
+  if(!filas.length)return null;
+  const mx=Math.max(...filas.map(f=>f[1]));
+  return (<div className="flex flex-col gap-2">
+    {filas.map(([n,v])=>(
+      <div key={n} className="grid grid-cols-[minmax(72px,26%)_1fr_auto] items-center gap-2.5 text-sm">
+        <span className="text-muted text-xs truncate">{n}</span>
+        <span className="h-3.5 rounded-sm" style={{width:Math.max(2,v/mx*100)+"%",background:tone==="gold"?"var(--gold)":"var(--brand)"}}/>
+        <span className="mono text-xs">{money(v)}</span>
+      </div>))}
+  </div>);
+}
+
+const Ctx=React.createContext(null);
+const useApp=()=>React.useContext(Ctx);
+
+/* ---------- INICIO ---------- */
+function Inicio(){
+  const {S,K,setVista,offW}=useApp();
+  const sab=sabado(offW), hy=hoy(), menuHoy=S.menu[hy]||{};
+  const pers=K.promSem/7/4;
+  return (<div className="flex flex-col gap-5 fade">
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <Label>Próximo mercado</Label>
+        <h2 className="serif text-3xl leading-tight">Sábado {sab.getDate()} de {sab.toLocaleDateString("es-CO",{month:"long"})}</h2>
+      </div>
+      <Btn variant="primary" icon="basket" onClick={()=>setVista("lista")}>Ver la lista · {K.listaTotal?money(K.listaTotal):K.lista.length+" productos"}</Btn>
+    </div>
+
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <Tile label="Gastado este mes" value={money(K.gastadoMes)} sub={K.proyMes>K.gastadoMes?"cerraría en "+money(K.proyMes):"al día de hoy"}/>
+      <Tile label="Pronóstico próximo mes" tone="gold"
+        value={K.pred!=null?money(K.pred):"—"}
+        sub={K.pred!=null?"entre "+kmoney(Math.max(0,K.pred-K.banda))+" y "+kmoney(K.pred+K.banda):"faltan datos"}/>
+      <Tile label="Promedio semanal" value={money(K.promSem)} sub="últimas 8 semanas"/>
+      <Tile label="Por persona al día" value={money(pers)} sub="familia de 4"/>
+    </div>
+
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="serif text-xl">Cómo va el gasto</h3>
+        {K.tendencia!==0&&<Chip tone={K.tendencia>0?"up":"down"}>
+          <Icon n={K.tendencia>0?"up":"down"} size={13}/>{(K.tendencia>0?"+":"")+Math.round(K.tendencia*100)}% al mes</Chip>}
+      </div>
+      <GraficoMeses K={K}/>
+      <p className="text-xs text-muted mt-2">
+        Barra punteada dorada: pronóstico calculado con la tendencia de los meses cerrados.
+        {K.inflacion!==0&&" El precio promedio de tu canasta ha cambiado "+(K.inflacion>0?"+":"")+Math.round(K.inflacion*100)+"% desde tu primera factura."}
+        {!Object.keys(K.hist).length&&" Todavía no hay precios: aparecen solos a medida que registres facturas."}
+      </p>
+    </Card>
+
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-2"><Icon n="pot" className="text-brand"/><h3 className="serif text-xl">Hoy se cocina</h3></div>
+        <div className="flex flex-col divide-y divide-line">
+          {COMIDAS.map(([k,l])=>(
+            <div key={k} className="flex items-baseline justify-between gap-3 py-2">
+              <span className="text-xs uppercase tracking-widest text-muted font-bold">{l}</span>
+              <span className="text-right text-sm">{(menuHoy[k]||[]).map(id=>K.rec(id)?.n).filter(Boolean).join(", ")||<span className="text-muted">sin definir</span>}</span>
+            </div>))}
+        </div>
+        <Btn className="mt-3" icon="calendar" onClick={()=>setVista("menu")}>Organizar la semana</Btn>
+      </Card>
+
+      <Card className="p-4">
+        <div className="flex items-center gap-2 mb-2"><Icon n="alert" className="text-gold"/><h3 className="serif text-xl">Ojo con estos precios</h3></div>
+        {K.alertas.length?(
+          <ul className="flex flex-col divide-y divide-line">
+            {K.alertas.slice(0,5).map(a=>(
+              <li key={a.p.id} className="flex items-center gap-3 py-2">
+                <span className="flex-1 text-sm">{a.p.n}</span>
+                <span className="mono text-xs text-muted">{money(a.pu)}/{a.p.un}</span>
+                <Chip tone={a.v>0?"up":"down"}><Icon n={a.v>0?"up":"down"} size={12}/>{Math.abs(Math.round(a.v*100))}%</Chip>
+              </li>))}
+          </ul>
+        ):<Empty>Cuando tengas dos facturas del mismo producto, aquí aparece si subió o bajó.</Empty>}
+      </Card>
+    </div>
+  </div>);
+}
+
+/* ---------- LISTA ---------- */
+function Lista(){
+  const {S,K,guardar,abrir,setVista}=useApp();
+  const hechos=new Set(S.lista?.[K.sk]||[]);
+  const pend=K.lista.filter(i=>!hechos.has(i.p.id)).reduce((s,i)=>s+i.cant*i.precio,0);
+  const toggle=pid=>guardar(n=>{const a=new Set(n.lista?.[K.sk]||[]);a.has(pid)?a.delete(pid):a.add(pid);
+    n.lista=n.lista||{};n.lista[K.sk]=[...a];return n;});
+  return (<div className="flex flex-col gap-4 fade">
+    <Card className="p-4 flex flex-wrap items-center justify-between gap-4 bg-brandsoft border-transparent">
+      <div>
+        <Label className="text-brand opacity-80">{K.listaTotal?"Estimado con precios ya conocidos":"Lista del sábado"}</Label>
+        <div className="serif text-4xl text-brand leading-none mt-1">{K.listaTotal?money(K.listaTotal):K.lista.length+" productos"}</div>
+        <div className="text-xs text-muted mt-1">
+          {K.lista.length} productos · {hechos.size} ya en el carro
+          {K.listaTotal>0&&" · falta "+money(pend)}
+          {K.sinPrecio>0&&" · "+K.sinPrecio+" sin precio todavía"}</div>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Btn variant="primary" icon="receipt" onClick={()=>abrir({t:"compra-lista"})}>Registrar compra</Btn>
+        <Btn icon="plus" onClick={()=>abrir({t:"extra"})}>Producto</Btn>
+        {hechos.size>0&&<Btn variant="bare" onClick={()=>guardar(n=>{n.lista[K.sk]=[];return n;})}>Destildar</Btn>}
+      </div>
+    </Card>
+    {!K.lista.length&&<Empty>Arma el menú de la semana y la lista se llena sola.</Empty>}
+    {CAT.map(c=>{
+      const g=K.lista.filter(i=>i.p.cat===c); if(!g.length)return null;
+      return (<section key={c}>
+        <div className="flex items-baseline justify-between mb-1.5 px-1">
+          <h3 className="serif text-lg">{c}</h3>
+          <span className="mono text-xs text-muted">{money(g.reduce((s,i)=>s+i.cant*i.precio,0))}</span>
+        </div>
+        <Card className="divide-y divide-line">
+          {g.map(i=>{const done=hechos.has(i.p.id);return (
+            <div key={i.p.id} className="flex items-center gap-3 px-3.5 py-2.5">
+              <input type="checkbox" checked={done} onChange={()=>toggle(i.p.id)}
+                className="w-5 h-5 shrink-0 accent-[var(--brand)]" aria-label={i.p.n}/>
+              <span className={done?"opacity-40":""}><Glifo cat={i.p.cat}/></span>
+              <div className={"flex-1 min-w-0 "+(done?"opacity-40 line-through":"")}>
+                <div className="flex items-center gap-1.5 flex-wrap text-sm">{i.p.n}
+                  {i.menu&&<Chip tone="brand">del menú</Chip>}
+                  {i.mensual&&<Chip tone="gold">mensual</Chip>}
+                  {Math.abs(i.varia)>=.08&&<Chip tone={i.varia>0?"up":"down"}>{i.varia>0?"▲":"▼"}{Math.abs(Math.round(i.varia*100))}%</Chip>}
+                </div>
+                <button className="mono text-[11px] text-muted hover:text-ink text-left"
+                  onClick={()=>abrir({t:"cant",pid:i.p.id,cant:i.cant})}>
+                  {fmt(i.cant)} {i.p.un}{i.precio!=null?" · "+money(i.precio)+"/"+i.p.un:""}</button>
+              </div>
+              <span className="mono text-sm">{i.precio!=null?money(i.cant*i.precio):<span className="text-muted">—</span>}</span>
+            </div>);})}
+        </Card>
+      </section>);})}
+  </div>);
+}
+
+/* ---------- MENÚ ---------- */
+function Menu(){
+  const {S,K,offW,abrir}=useApp();
+  const hy=hoy();
+  return (<div className="flex flex-col gap-4 fade">
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <h2 className="serif text-2xl">Qué se cocina esta semana</h2>
+      <span className="text-sm text-muted">{K.costoMenu?<>Ingredientes del menú: <b className="mono text-ink">{money(K.costoMenu)}</b></>:"El costo aparece cuando registres facturas"}</span>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {semanaDias(offW).map(d=>{
+        const k=iso(d), m=S.menu[k]||{}, esHoy=k===hy;
+        return (<Card key={k} className={"overflow-hidden "+(esHoy?"ring-1 ring-brand border-brand":"")}>
+          <div className="flex items-baseline justify-between px-3.5 py-2 bg-sunk border-b border-line">
+            <h3 className="serif text-lg">{DIAS[d.getDay()]}</h3>
+            <span className="mono text-[11px] text-muted">{d.getDate()}/{d.getMonth()+1}</span>
+          </div>
+          {COMIDAS.map(([ck,cl])=>{
+            const ids=m[ck]||[];
+            return (<button key={ck} onClick={()=>abrir({t:"comida",fecha:k,comida:ck})}
+              className="w-full text-left px-3.5 py-2.5 border-b border-line last:border-0 hover:bg-sunk">
+              <Label>{cl}</Label>
+              <div className="text-sm mt-0.5">{ids.length?ids.map(id=>K.rec(id)?.n).filter(Boolean).join(" · ")
+                :<span className="text-muted inline-flex items-center gap-1"><Icon n="plus" size={13}/>elegir</span>}</div>
+            </button>);})}
+        </Card>);})}
+    </div>
+  </div>);
+}
+
+/* ---------- RECETAS ---------- */
+const TAGCOL={nuevo:"gold",rápido:"n",económico:"down",base:"n",perros:"brand"};
+function Recetas(){
+  const {S,K,abrir}=useApp();
+  const [q,setQ]=useState(""), [filtro,setFiltro]=useState("todas");
+  const rs=useMemo(()=>{
+    const nq=norm(q);
+    return S.recetas.filter(r=>{
+      if(filtro==="nuevas"&&!r.tags.includes("nuevo"))return false;
+      if(["desayuno","almuerzo","cena"].includes(filtro)&&r.tipo!==filtro)return false;
+      if(nq&&!norm(r.n).includes(nq)&&!r.ing.some(i=>norm(K.prod(i.p)?.n||"").includes(nq)))return false;
+      return true;
+    }).sort((a,b)=>a.n.localeCompare(b.n));
+  },[S.recetas,q,filtro]);
+  const costo=r=>r.ing.reduce((s,i)=>s+(K.precio(i.p)??0)*i.c,0);
+  const filtros=[["todas","Todas"],["nuevas","Para probar"],["desayuno","Desayuno"],["almuerzo","Almuerzo"],["cena","Cena"]];
+  return (<div className="flex flex-col gap-4 fade">
+    <div className="flex flex-wrap gap-3 items-center justify-between">
+      <div className="relative flex-1 min-w-[200px]">
+        <Icon n="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"/>
+        <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar receta o ingrediente"
+          className={inputCls+" pl-9"}/>
+      </div>
+      <div className="flex gap-2">
+        <Btn icon="plus" onClick={()=>abrir({t:"receta"})}>Nueva receta</Btn>
+        <Btn icon="bag" onClick={()=>abrir({t:"productos"})}>Productos</Btn>
+      </div>
+    </div>
+    <div className="flex gap-1.5 overflow-x-auto pb-1">
+      {filtros.map(([k,l])=>(
+        <button key={k} onClick={()=>setFiltro(k)}
+          className={"px-3.5 py-1.5 rounded-full text-sm font-semibold border whitespace-nowrap "+
+            (filtro===k?"bg-brand text-onbrand border-brand":"border-line text-muted hover:text-ink")}>{l}</button>))}
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {rs.map(r=>(
+        <Card key={r.id} className="p-4 flex flex-col gap-2 hover:border-brand cursor-pointer"
+          onClick={()=>abrir({t:"ver-receta",id:r.id})}>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="serif text-xl leading-snug">{r.n}</h3>
+            {costo(r)>0&&<span className="mono text-sm text-brand shrink-0">{money(costo(r))}</span>}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <Chip><Icon n="clock" size={12}/>{r.t} min</Chip>
+            {r.tags.map(t=><Chip key={t} tone={TAGCOL[t]||"n"}>{t}</Chip>)}
+          </div>
+          <p className="text-xs text-muted line-clamp-2">{r.ing.map(i=>K.prod(i.p)?.n).filter(Boolean).join(" · ")}</p>
+        </Card>))}
+      {!rs.length&&<Empty>No hay recetas con ese filtro.</Empty>}
+    </div>
+  </div>);
+}
+
+/* ---------- FACTURAS ---------- */
+const TIPOS=[["supermercado","Supermercado"],["aparte","Compras aparte"],["aseo","Aseo"],
+             ["perros","Perros"],["medicamentos","Medicamentos"],["otros","Otros"]];
+function Facturas(){
+  const {S,K,compras,guardarCompra,aviso,abrir}=useApp();
+  const [cargando,setCargando]=useState("");
+  const [borrador,setBorrador]=useState(null);
+  const fileRef=useRef(null);
+
+  async function procesar(file){
+    setCargando("Leyendo "+file.name+"…");
+    try{
+      const ext=file.name.split(".").pop().toLowerCase();
+      let base={fecha:iso(sabado(0)),tienda:"",total:0,filas:[]};
+      if(ext==="xml"){
+        const r=leerXmlDian(await file.text(),S.catalogo);
+        base={fecha:(r.fecha||base.fecha).slice(0,10),tienda:r.tienda,total:r.total,filas:r.filas};
+        if(!r.filas.length)throw new Error("El XML no trae líneas de factura reconocibles.");
+      }else if(ext==="pdf"){
+        const txt=await textoDePdf(file);
+        if(txt.trim().length<40)throw new Error("Ese PDF no tiene texto (parece escaneado). Agrega los ítems a mano.");
+        base.filas=lineasDeTexto(txt,S.catalogo);
+        const m=txt.match(/(\d{4}-\d{2}-\d{2})/); if(m)base.fecha=m[1];
+        const t=txt.match(/total[^\d]{0,20}([\d.,]{4,})/i); if(t)base.total=parseMoneyCO(t[1]);
+      }else{
+        base.filas=lineasDeTexto(await file.text(),S.catalogo);
+      }
+      setBorrador({...base,tipo:"supermercado",archivo:file.name});
+      if(!base.filas.length)aviso("No se reconocieron líneas: revisa y agrégalas a mano.");
+    }catch(e){ aviso(e.message||"No se pudo leer el archivo"); }
+    setCargando("");
+  }
+  function guardar(){
+    const items=borrador.filas.filter(f=>f.p&&+f.valor>0).map(f=>({p:f.p,cant:+f.cant||1,valor:+f.valor}));
+    const c={id:uid("c"),fecha:borrador.fecha,tienda:borrador.tienda||"Mercado",tipo:borrador.tipo,
+      total:+borrador.total||items.reduce((s,i)=>s+i.valor,0),items,origen:borrador.archivo||"manual"};
+    if(!c.total&&!items.length)return aviso("Falta el total o al menos un ítem.");
+    guardarCompra(c);setBorrador(null);aviso("Compra guardada");
+  }
+  const setFila=(ix,campo,v)=>setBorrador(b=>({...b,filas:b.filas.map((f,i)=>i===ix?{...f,[campo]:v}:f)}));
+
+  return (<div className="flex flex-col gap-4 fade">
+    <div className="flex flex-wrap items-end justify-between gap-3">
+      <div><h2 className="serif text-2xl">Facturas</h2>
+        <p className="text-sm text-muted">Sube el XML de la factura electrónica (el más exacto), el PDF, o registra solo el total.</p></div>
+      <Btn variant="ghost" icon="plus" onClick={()=>setBorrador({fecha:iso(sabado(0)),tienda:"",total:0,tipo:"supermercado",filas:[]})}>Manual</Btn>
+    </div>
+
+    {!borrador&&(
+      <Card className="p-6 border-dashed text-center flex flex-col items-center gap-3"
+        onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)procesar(f);}}>
+        <Icon n="upload" size={30} className="text-brand"/>
+        <div><b className="text-base">Arrastra la factura aquí</b>
+          <p className="text-sm text-muted mt-1">XML de la DIAN, PDF con texto, o TXT. Se lee en tu dispositivo, no se envía a ningún lado.</p></div>
+        <input ref={fileRef} type="file" accept=".xml,.pdf,.txt" className="hidden"
+          onChange={e=>{const f=e.target.files[0];if(f)procesar(f);e.target.value="";}}/>
+        <Btn variant="primary" icon="file" onClick={()=>fileRef.current.click()}>Escoger archivo</Btn>
+        {cargando&&<span className="text-sm text-muted">{cargando}</span>}
+      </Card>)}
+
+    {borrador&&(
+      <Card className="p-4 flex flex-col gap-4">
+        <div className="grid gap-3 sm:grid-cols-4">
+          <Field label="Fecha"><input type="date" className={inputCls} value={borrador.fecha}
+            onChange={e=>setBorrador({...borrador,fecha:e.target.value})}/></Field>
+          <Field label="Dónde"><input className={inputCls} value={borrador.tienda} placeholder="Éxito, D1, droguería…"
+            onChange={e=>setBorrador({...borrador,tienda:e.target.value})}/></Field>
+          <Field label="Tipo"><select className={inputCls} value={borrador.tipo}
+            onChange={e=>setBorrador({...borrador,tipo:e.target.value})}>
+            {TIPOS.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></Field>
+          <Field label="Total pagado"><input type="number" className={inputCls+" mono"} value={borrador.total||""}
+            onChange={e=>setBorrador({...borrador,total:+e.target.value})}/></Field>
+        </div>
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <Label>Ítems detectados ({borrador.filas.length})</Label>
+            <Btn variant="bare" icon="plus" onClick={()=>setBorrador(b=>({...b,filas:[...b.filas,{desc:"",cant:1,valor:0,p:""}]}))}>Agregar</Btn>
+          </div>
+          <div className="overflow-x-auto -mx-1 px-1">
+            <table className="w-full text-sm border-separate border-spacing-y-1 min-w-[560px]">
+              <thead><tr className="text-left">
+                <th className="font-semibold text-xs text-muted pb-1">En la factura</th>
+                <th className="font-semibold text-xs text-muted pb-1 w-44">Producto</th>
+                <th className="font-semibold text-xs text-muted pb-1 w-20">Cant.</th>
+                <th className="font-semibold text-xs text-muted pb-1 w-28">Valor</th>
+                <th></th></tr></thead>
+              <tbody>{borrador.filas.map((f,ix)=>(
+                <tr key={ix} className={f.p?"":"opacity-60"}>
+                  <td className="pr-2"><input className={inputCls+" py-1.5"} value={f.desc} onChange={e=>setFila(ix,"desc",e.target.value)}/></td>
+                  <td className="pr-2"><select className={inputCls+" py-1.5"} value={f.p} onChange={e=>setFila(ix,"p",e.target.value)}>
+                    <option value="">— ignorar —</option>
+                    {CAT.map(c=>(<optgroup key={c} label={c}>
+                      {S.catalogo.filter(p=>p.cat===c).map(p=><option key={p.id} value={p.id}>{p.n}</option>)}</optgroup>))}
+                  </select></td>
+                  <td className="pr-2"><input type="number" step="0.25" className={inputCls+" py-1.5 mono"} value={f.cant}
+                    onChange={e=>setFila(ix,"cant",+e.target.value)}/></td>
+                  <td className="pr-2"><input type="number" className={inputCls+" py-1.5 mono"} value={f.valor}
+                    onChange={e=>setFila(ix,"valor",+e.target.value)}/></td>
+                  <td><button className="text-muted hover:text-bad p-1" aria-label="Quitar"
+                    onClick={()=>setBorrador(b=>({...b,filas:b.filas.filter((_,i)=>i!==ix)}))}><Icon n="x" size={15}/></button></td>
+                </tr>))}</tbody>
+            </table>
+          </div>
+          {!borrador.filas.length&&<Empty>Sin detalle. Puedes guardar solo con el total.</Empty>}
+        </div>
+        <div className="flex justify-end gap-2">
+          <Btn onClick={()=>setBorrador(null)}>Cancelar</Btn>
+          <Btn variant="primary" icon="check" onClick={guardar}>Guardar compra</Btn>
+        </div>
+      </Card>)}
+
+    <Card className="divide-y divide-line">
+      {compras.length?compras.map(c=>(
+        <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+          <Icon n={c.items?.length?"file":"wallet"} className="text-muted shrink-0"/>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap text-sm font-semibold">{c.tienda||"Mercado"}
+              <Chip tone={c.tipo==="perros"?"brand":"n"}>{TIPOS.find(t=>t[0]===c.tipo)?.[1]||"Supermercado"}</Chip>
+              {c.items?.length?<Chip>{c.items.length} ítems</Chip>:<Chip tone="gold">solo total</Chip>}</div>
+            <div className="mono text-[11px] text-muted">{fechaCorta(c.fecha)}{c.origen&&c.origen!=="manual"?" · "+c.origen:""}</div>
+          </div>
+          <span className="mono text-sm">{money(totalCompra(c))}</span>
+          <button className="text-muted hover:text-ink p-1" onClick={()=>abrir({t:"ver-compra",id:c.id})} aria-label="Abrir"><Icon n="edit" size={16}/></button>
+        </div>)):<Empty>Aún no hay facturas. Empieza por los sábados de los últimos meses con el extracto del banco: fecha y total bastan.</Empty>}
+    </Card>
+  </div>);
+}
+
+/* ---------- GASTOS ---------- */
+function Gastos(){
+  const {K,compras,abrir}=useApp();
+  const porTipo={};compras.filter(c=>c.fecha>=iso(new Date(Date.now()-90*864e5)))
+    .forEach(c=>{const t=TIPOS.find(x=>x[0]===(c.tipo||"supermercado"))[1];porTipo[t]=(porTipo[t]||0)+totalCompra(c);});
+  const cats=Object.entries(K.porCat).sort((a,b)=>b[1]-a[1]);
+  const top=Object.entries(K.porProd).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([id,v])=>[K.prod(id)?.n||id,v]);
+  return (<div className="flex flex-col gap-4 fade">
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+      <Tile label="Este mes" value={money(K.gastadoMes)} sub={"proyectado "+money(K.proyMes)}/>
+      <Tile label="Próximo mes" tone="gold" value={K.pred!=null?money(K.pred):"—"} sub="pronóstico"/>
+      <Tile label="Semanal" value={money(K.promSem)} sub="promedio 8 semanas"/>
+      <Tile label="Perros" value={money(K.perros)} sub="últimos 90 días"/>
+    </div>
+    <Card className="p-4"><h3 className="serif text-xl mb-1">Historia y pronóstico</h3><GraficoMeses K={K}/></Card>
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card className="p-4">
+        <h3 className="serif text-xl mb-3">Por tipo de compra <span className="text-xs text-muted font-sans">90 días</span></h3>
+        {Object.keys(porTipo).length?<Barras filas={Object.entries(porTipo).sort((a,b)=>b[1]-a[1])}/>
+          :<Empty>Sin compras en los últimos 90 días.</Empty>}
+      </Card>
+      <Card className="p-4">
+        <h3 className="serif text-xl mb-3">Por categoría <span className="text-xs text-muted font-sans">90 días</span></h3>
+        {cats.length?<><Barras filas={cats} tone="gold"/>
+          <p className="text-xs text-muted mt-3">Sale de {K.conDetalle} compras con detalle por producto.</p></>
+          :<Empty>Necesita al menos una factura con ítems.</Empty>}
+      </Card>
+    </div>
+    {top.length>0&&<Card className="p-4"><h3 className="serif text-xl mb-3">Los 10 que más pesan</h3><Barras filas={top}/></Card>}
+    {K.alertas.length>0&&(
+      <Card className="p-4"><h3 className="serif text-xl mb-3">Cambios de precio</h3>
+        <ul className="divide-y divide-line">{K.alertas.map(a=>(
+          <li key={a.p.id} className="flex items-center gap-3 py-2">
+            <span className="flex-1 text-sm">{a.p.n}</span>
+            <span className="mono text-xs text-muted">{money(a.pu)}/{a.p.un}</span>
+            <Chip tone={a.v>0?"up":"down"}><Icon n={a.v>0?"up":"down"} size={12}/>{Math.abs(Math.round(a.v*100))}%</Chip>
+          </li>))}</ul></Card>)}
+  </div>);
+}
+
+/* ---------- modales ---------- */
+function Modales(){
+  const {S,K,modal,cerrar,abrir,guardar,guardarCompra,borrarCompra,compras,aviso,offW}=useApp();
+  const [tmp,setTmp]=useState(null);
+  useEffect(()=>{setTmp(null)},[modal]);
+  if(!modal)return null;
+  const M=modal;
+
+  if(M.t==="comida"){
+    const sel=new Set(tmp??((S.menu[M.fecha]||{})[M.comida]||[]));
+    const rs=[...S.recetas].sort((a,b)=>(a.tipo===M.comida?0:1)-(b.tipo===M.comida?0:1)||a.n.localeCompare(b.n));
+    return <Modal title={DIAS[new Date(M.fecha+"T12:00").getDay()]+" · "+COMIDAS.find(c=>c[0]===M.comida)[1]} onClose={cerrar}
+      footer={<><Btn onClick={cerrar}>Cancelar</Btn><Btn variant="primary" onClick={()=>{
+        guardar(n=>{n.menu[M.fecha]=n.menu[M.fecha]||{};n.menu[M.fecha][M.comida]=[...sel];return n;});cerrar();}}>Listo</Btn></>}>
+      <div className="flex flex-wrap gap-1.5">{rs.map(r=>(
+        <button key={r.id} onClick={()=>{const s=new Set(sel);s.has(r.id)?s.delete(r.id):s.add(r.id);setTmp([...s]);}}
+          className={"px-3 py-1.5 rounded-full text-sm border "+(sel.has(r.id)?"bg-brand text-onbrand border-brand font-semibold":"border-line text-muted hover:text-ink")}>
+          {r.n}</button>))}</div>
+    </Modal>;
+  }
+  if(M.t==="cant"){
+    const v=tmp??M.cant;
+    return <Modal title={"Cantidad · "+K.prod(M.pid).n} onClose={cerrar}
+      footer={<><Btn onClick={cerrar}>Cancelar</Btn><Btn variant="primary" onClick={()=>{
+        guardar(n=>{n.ajustes=n.ajustes||{};(n.ajustes[K.sk]=n.ajustes[K.sk]||{})[M.pid]=+v||0;return n;});cerrar();}}>Guardar</Btn></>}>
+      <Field label={"Cantidad en "+K.prod(M.pid).un}>
+        <input type="number" step="0.25" min="0" autoFocus className={inputCls+" mono"} value={v} onChange={e=>setTmp(e.target.value)}/></Field>
+    </Modal>;
+  }
+  if(M.t==="extra"){
+    const v=tmp||{p:"",c:1,q:""};
+    const nq=norm(v.q);
+    const opts=S.catalogo.filter(p=>!nq||norm(p.n).includes(nq));
+    return <Modal wide title="Agregar a la lista" onClose={cerrar}
+      footer={<><Btn onClick={cerrar}>Cancelar</Btn>
+        <Btn variant="primary" disabled={!v.p} onClick={()=>{
+          guardar(n=>{n.extras=n.extras||{};(n.extras[K.sk]=n.extras[K.sk]||[]).push({p:v.p,c:+v.c||1});return n;});cerrar();}}>
+          Agregar{v.p?" "+K.prod(v.p).n:""}</Btn></>}>
+      <div className="relative">
+        <Icon n="search" size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"/>
+        <input autoFocus value={v.q} onChange={e=>setTmp({...v,q:e.target.value})}
+          placeholder="Buscar producto" className={inputCls+" pl-9"}/>
+      </div>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-[42vh] overflow-auto -mx-1 px-1">
+        {opts.map(p=>(
+          <button key={p.id} onClick={()=>setTmp({...v,p:p.id})}
+            className={"flex flex-col items-center gap-1.5 p-2.5 rounded-xl2 border text-center "+
+              (v.p===p.id?"border-brand bg-brandsoft":"border-line hover:bg-sunk")}>
+            <Glifo cat={p.cat} size={38}/>
+            <span className="text-xs leading-tight">{p.n}</span>
+          </button>))}
+        {!opts.length&&<p className="col-span-full text-sm text-muted text-center py-4">Nada con ese nombre. Créalo en Recetas → Productos.</p>}
+      </div>
+      <Field label={"Cantidad"+(v.p?" en "+K.prod(v.p).un:"")}>
+        <input type="number" step="0.25" className={inputCls+" mono"} value={v.c} onChange={e=>setTmp({...v,c:e.target.value})}/></Field>
+    </Modal>;
+  }
+  if(M.t==="ver-receta"){
+    const r=K.rec(M.id); if(!r)return null;
+    const costo=r.ing.reduce((s,i)=>s+(K.precio(i.p)??0)*i.c,0);
+    const dest=tmp||{fecha:hoy(),comida:r.tipo};
+    return <Modal wide title={r.n} onClose={cerrar}
+      footer={<><Btn icon="edit" onClick={()=>abrir({t:"receta",id:r.id})}>Editar</Btn>
+        <Btn variant="primary" icon="calendar" onClick={()=>{
+          guardar(n=>{n.menu[dest.fecha]=n.menu[dest.fecha]||{};
+            const a=new Set(n.menu[dest.fecha][dest.comida]||[]);a.add(r.id);
+            n.menu[dest.fecha][dest.comida]=[...a];return n;});
+          aviso("Agregada al menú");cerrar();}}>Agregar al menú</Btn></>}>
+      <div className="flex flex-wrap gap-1.5">
+        <Chip tone="brand">{COMIDAS.find(c=>c[0]===r.tipo)[1]}</Chip>
+        <Chip><Icon n="clock" size={12}/>{r.t} min</Chip>
+{costo>0&&<Chip tone="gold">{money(costo)} · {money(costo/4)} por persona</Chip>}
+        {r.tags.map(t=><Chip key={t} tone={TAGCOL[t]||"n"}>{t}</Chip>)}
+      </div>
+      {r.nota&&<p className="text-sm text-muted italic border-l-2 border-gold pl-3">{r.nota}</p>}
+      <div><Label>Ingredientes para 4</Label>
+        <ul className="mt-1.5 divide-y divide-line">{r.ing.map((i,ix)=>(
+          <li key={ix} className="flex items-center gap-2.5 py-1.5 text-sm">
+            <Glifo cat={K.prod(i.p)?.cat||"Otros"} size={28}/>
+            <span className="flex-1">{K.prod(i.p)?.n||"?"}</span>
+            <span className="mono text-muted">{fmt(i.c)} {K.prod(i.p)?.un}{K.precio(i.p)!=null?" · "+money(i.c*K.precio(i.p)):""}</span></li>))}</ul></div>
+      <div><Label>Preparación</Label>
+        <ol className="mt-1.5 flex flex-col gap-2">{r.pasos.map((p,ix)=>(
+          <li key={ix} className="flex gap-3 text-sm">
+            <span className="mono text-brand font-semibold shrink-0">{ix+1}</span><span>{p}</span></li>))}</ol></div>
+      <div className="flex flex-wrap gap-2 pt-1">
+        <a href={yt(r.n)} target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-semibold text-brand hover:underline">
+          <Icon n="link" size={15}/>Ver preparación en video</a>
+        <a href={gg(r.n)} target="_blank" rel="noopener" className="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-ink hover:underline">
+          <Icon n="search" size={15}/>Buscar variaciones</a>
+      </div>
+      <div className="border-t border-line pt-3 grid grid-cols-2 gap-3">
+        <Field label="Programar el día"><input type="date" className={inputCls} value={dest.fecha}
+          onChange={e=>setTmp({...dest,fecha:e.target.value})}/></Field>
+        <Field label="Comida"><select className={inputCls} value={dest.comida} onChange={e=>setTmp({...dest,comida:e.target.value})}>
+          {COMIDAS.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></Field>
+      </div>
+    </Modal>;
+  }
+  if(M.t==="receta"){
+    const r0=M.id?K.rec(M.id):{n:"",tipo:"almuerzo",t:30,ing:[],pasos:[""],tags:[],nota:""};
+    const r=tmp||structuredClone(r0);
+    const set=(k,v)=>setTmp({...r,[k]:v});
+    return <Modal wide title={M.id?"Editar receta":"Nueva receta"} onClose={cerrar}
+      footer={<>{M.id&&<Btn variant="bare" icon="trash" onClick={()=>{
+          guardar(n=>{n.recetas=n.recetas.filter(x=>x.id!==M.id);
+            Object.values(n.menu).forEach(m=>COMIDAS.forEach(([k])=>{if(m[k])m[k]=m[k].filter(x=>x!==M.id)}));return n;});cerrar();}}>Borrar</Btn>}
+        <Btn onClick={cerrar}>Cancelar</Btn>
+        <Btn variant="primary" onClick={()=>{
+          if(!r.n.trim())return aviso("Falta el nombre");
+          const limpia={...r,t:+r.t||20,ing:r.ing.filter(i=>i.p&&+i.c>0).map(i=>({p:i.p,c:+i.c})),pasos:r.pasos.filter(p=>p.trim())};
+          guardar(n=>{if(M.id)n.recetas=n.recetas.map(x=>x.id===M.id?{...limpia,id:M.id}:x);
+            else n.recetas.push({...limpia,id:uid("r")});return n;});cerrar();}}>Guardar</Btn></>}>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="Nombre"><input className={inputCls} value={r.n} onChange={e=>set("n",e.target.value)}/></Field>
+        <Field label="Comida"><select className={inputCls} value={r.tipo} onChange={e=>set("tipo",e.target.value)}>
+          {COMIDAS.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></Field>
+        <Field label="Minutos"><input type="number" className={inputCls+" mono"} value={r.t} onChange={e=>set("t",e.target.value)}/></Field>
+      </div>
+      <div><Label>Ingredientes</Label>
+        <div className="flex flex-col gap-2 mt-1.5">{r.ing.map((i,ix)=>(
+          <div key={ix} className="flex gap-2">
+            <select className={inputCls} value={i.p} onChange={e=>set("ing",r.ing.map((x,j)=>j===ix?{...x,p:e.target.value}:x))}>
+              <option value="">—</option>
+              {CAT.map(c=><optgroup key={c} label={c}>{S.catalogo.filter(p=>p.cat===c).map(p=><option key={p.id} value={p.id}>{p.n}</option>)}</optgroup>)}
+            </select>
+            <input type="number" step="0.25" className={inputCls+" mono w-24"} value={i.c}
+              onChange={e=>set("ing",r.ing.map((x,j)=>j===ix?{...x,c:e.target.value}:x))}/>
+            <button className="text-muted hover:text-bad px-1" onClick={()=>set("ing",r.ing.filter((_,j)=>j!==ix))}><Icon n="x" size={16}/></button>
+          </div>))}</div>
+        <Btn variant="bare" icon="plus" className="mt-1" onClick={()=>set("ing",[...r.ing,{p:S.catalogo[0].id,c:1}])}>Ingrediente</Btn></div>
+      <div><Label>Preparación</Label>
+        <div className="flex flex-col gap-2 mt-1.5">{r.pasos.map((p,ix)=>(
+          <div key={ix} className="flex gap-2 items-start">
+            <span className="mono text-brand font-semibold pt-2">{ix+1}</span>
+            <textarea rows="2" className={inputCls} value={p} onChange={e=>set("pasos",r.pasos.map((x,j)=>j===ix?e.target.value:x))}/>
+            <button className="text-muted hover:text-bad px-1 pt-2" onClick={()=>set("pasos",r.pasos.filter((_,j)=>j!==ix))}><Icon n="x" size={16}/></button>
+          </div>))}</div>
+        <Btn variant="bare" icon="plus" className="mt-1" onClick={()=>set("pasos",[...r.pasos,""])}>Paso</Btn></div>
+      <Field label="Nota"><input className={inputCls} value={r.nota} onChange={e=>set("nota",e.target.value)}/></Field>
+    </Modal>;
+  }
+  if(M.t==="productos"){
+    const ed=tmp;
+    if(ed) return <Modal title={ed.id?"Editar producto":"Nuevo producto"} onClose={()=>setTmp(null)}
+      footer={<><Btn onClick={()=>setTmp(null)}>Volver</Btn><Btn variant="primary" onClick={()=>{
+        guardar(n=>{const d={n:ed.n,cat:ed.cat,un:ed.un,freq:ed.freq,base:+ed.base||1,precio:+ed.precio||0};
+          if(ed.id)n.catalogo=n.catalogo.map(p=>p.id===ed.id?{...p,...d}:p);else n.catalogo.push({id:uid("p"),...d});return n;});
+        setTmp(null);}}>Guardar</Btn></>}>
+      <Field label="Nombre"><input className={inputCls} value={ed.n} onChange={e=>setTmp({...ed,n:e.target.value})}/></Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Categoría"><select className={inputCls} value={ed.cat} onChange={e=>setTmp({...ed,cat:e.target.value})}>
+          {CAT.map(c=><option key={c}>{c}</option>)}</select></Field>
+        <Field label="Unidad"><select className={inputCls} value={ed.un} onChange={e=>setTmp({...ed,un:e.target.value})}>
+          {["lb","kg","g","u","l","ml","manojo","paca","bolsa","caja"].map(u=><option key={u}>{u}</option>)}</select></Field>
+        <Field label="Cada cuánto"><select className={inputCls} value={ed.freq} onChange={e=>setTmp({...ed,freq:e.target.value})}>
+          <option value="sem">Cada semana</option><option value="mes">Cada mes</option><option value="ocas">Ocasional</option></select></Field>
+        <Field label="Cantidad típica"><input type="number" step="0.25" className={inputCls+" mono"} value={ed.base} onChange={e=>setTmp({...ed,base:e.target.value})}/></Field>
+      </div>
+      <p className="text-xs text-muted">El precio no se escribe a mano: sale solo del valor que registres en las facturas.</p>
+    </Modal>;
+    return <Modal wide title="Productos" onClose={cerrar}
+      footer={<Btn variant="primary" icon="plus" onClick={()=>setTmp({n:"",cat:"Verduras",un:"lb",freq:"sem",base:1,precio:0})}>Nuevo producto</Btn>}>
+      {CAT.map(c=>{const g=S.catalogo.filter(p=>p.cat===c);if(!g.length)return null;
+        return <div key={c}><Label>{c}</Label>
+          <ul className="divide-y divide-line mt-1 mb-2">{g.map(p=>(
+            <li key={p.id} className="flex items-center gap-2 py-1.5 text-sm">
+              <Glifo cat={p.cat} size={26}/>
+              <span className="flex-1">{p.n} <Chip>{{sem:"semanal",mes:"mensual",ocas:"ocasional"}[p.freq]}</Chip></span>
+              <span className="mono text-xs text-muted">{K.precio(p.id)!=null?money(K.precio(p.id))+"/"+p.un:"sin precio"}</span>
+              <button className="text-muted hover:text-ink p-1" onClick={()=>setTmp({...p})}><Icon n="edit" size={15}/></button>
+            </li>))}</ul></div>;})}
+    </Modal>;
+  }
+  if(M.t==="ver-compra"){
+    const c=compras.find(x=>x.id===M.id); if(!c)return null;
+    return <Modal wide title={(c.tienda||"Mercado")+" · "+fechaCorta(c.fecha)} onClose={cerrar}
+      footer={<><Btn variant="bare" icon="trash" onClick={()=>{if(confirm("¿Borrar esta compra?")){borrarCompra(c.id);cerrar();}}}>Borrar</Btn>
+        <Btn variant="primary" onClick={cerrar}>Cerrar</Btn></>}>
+      <div className="flex items-baseline justify-between">
+        <Chip tone="brand">{TIPOS.find(t=>t[0]===(c.tipo||"supermercado"))?.[1]}</Chip>
+        <span className="serif text-2xl">{money(totalCompra(c))}</span></div>
+      {c.items?.length?<ul className="divide-y divide-line">{c.items.map((i,ix)=>(
+        <li key={ix} className="flex justify-between py-2 text-sm"><span>{K.prod(i.p)?.n||i.p}</span>
+          <span className="mono text-muted">{fmt(i.cant)} × {money(i.valor/(i.cant||1))} = {money(i.valor)}</span></li>))}</ul>
+        :<Empty>Registrada solo con el total. Sube la factura para tener el detalle.</Empty>}
+    </Modal>;
+  }
+  if(M.t==="compra-lista"){
+    const hechos=new Set(S.lista?.[K.sk]||[]);
+    const sel=(hechos.size?K.lista.filter(i=>hechos.has(i.p.id)):K.lista);
+    const v=tmp||{fecha:iso(sabado(offW)),tienda:"Mercado",tipo:"supermercado"};
+    const est=sel.reduce((s,i)=>s+i.cant*i.precio,0);
+    return <Modal title="Registrar compra de la lista" onClose={cerrar}
+      footer={<><Btn onClick={cerrar}>Cancelar</Btn><Btn variant="primary" icon="check" onClick={()=>{
+        guardarCompra({id:uid("c"),fecha:v.fecha,tienda:v.tienda,tipo:v.tipo,origen:"lista",
+          items:sel.map(i=>({p:i.p.id,cant:i.cant,valor:i.precio!=null?Math.round(i.cant*i.precio):0})),total:Math.round(est)});
+        aviso("Compra creada: escribe los valores reales en Facturas");cerrar();}}>Crear</Btn></>}>
+      <p className="text-sm text-muted">Se guardarán {sel.length} productos con la cantidad de la lista y el valor en cero.
+        Ábrela en <b>Facturas</b> y escribe lo que pagó cada uno: así la app aprende los precios.</p>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Fecha"><input type="date" className={inputCls} value={v.fecha} onChange={e=>setTmp({...v,fecha:e.target.value})}/></Field>
+        <Field label="Dónde"><input className={inputCls} value={v.tienda} onChange={e=>setTmp({...v,tienda:e.target.value})}/></Field>
+      </div>
+      <Field label="Tipo"><select className={inputCls} value={v.tipo} onChange={e=>setTmp({...v,tipo:e.target.value})}>
+        {TIPOS.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></Field>
+    </Modal>;
+  }
+  return null;
+}
+
+/* ---------- aplicación ---------- */
+const VISTAS=[["inicio","Inicio","home"],["lista","Lista","basket"],["menu","Menú","calendar"],
+              ["recetas","Recetas","pot"],["facturas","Facturas","receipt"],["gastos","Gastos","chart"]];
+function App(){
+  const [toast,setToast]=useState("");
+  const aviso=useCallback(m=>{setToast(m);setTimeout(()=>setToast(""),2800);},[]);
+  const {S,compras,sync,guardar,guardarCompra,borrarCompra}=useDatos(aviso);
+  const [vista,setVista]=useState("inicio");
+  const [offW,setOffW]=useState(0);
+  const [modal,setModal]=useState(null);
+  const K=useCalculos(S,compras,offW);
+  if(!S||!K)return <div className="min-h-screen grid place-items-center text-muted text-sm">Cargando…</div>;
+  const ctx={S,K,compras,sync,guardar,guardarCompra,borrarCompra,vista,setVista,offW,setOffW,
+    modal,abrir:setModal,cerrar:()=>setModal(null),aviso};
+  const s=sabado(offW), f=new Date(s); f.setDate(s.getDate()+6);
+  const rango=d=>d.toLocaleDateString("es-CO",{day:"numeric",month:"short"});
+  const Vista={inicio:Inicio,lista:Lista,menu:Menu,recetas:Recetas,facturas:Facturas,gastos:Gastos}[vista];
+  return (<Ctx.Provider value={ctx}>
+    <div className="min-h-screen md:flex">
+      <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-line bg-surface px-4 py-5 gap-6 sticky top-0 h-screen">
+        <div>
+          <div className="serif text-2xl leading-tight">Familia<br/>Sepúlveda</div>
+          <div className="text-[11px] uppercase tracking-[.16em] text-muted font-bold mt-1">Mercado y cocina</div>
+        </div>
+        <nav className="flex flex-col gap-0.5">
+          {VISTAS.map(([k,l,ic])=>(
+            <button key={k} onClick={()=>setVista(k)}
+              className={"flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold text-left "+
+                (vista===k?"bg-brandsoft text-brand":"text-muted hover:text-ink hover:bg-sunk")}>
+              <Icon n={ic}/>{l}</button>))}
+        </nav>
+        <div className="mt-auto text-[11px] text-muted flex items-center gap-1.5">
+          <span className={"w-1.5 h-1.5 rounded-full "+(sync==="nube"?"bg-good":"bg-gold")}/>
+          {sync==="nube"?"Sincronizado":"Guardado en este equipo"}
+        </div>
+      </aside>
+
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="sticky top-0 z-20 bg-surface border-b border-line">
+          <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+            <div className="md:hidden serif text-lg leading-none">Familia Sepúlveda</div>
+            <div className="hidden md:block serif text-xl">{VISTAS.find(v=>v[0]===vista)[1]}</div>
+            <div className="flex items-center gap-1">
+              <button onClick={()=>setOffW(o=>o-1)} className="text-muted hover:text-ink p-1.5" aria-label="Semana anterior"><Icon n="left" size={17}/></button>
+              <button onClick={()=>setOffW(0)} className="mono text-[11px] text-muted hover:text-ink px-1 whitespace-nowrap">
+                {offW===0?"esta semana · ":""}{rango(s)}–{rango(f)}</button>
+              <button onClick={()=>setOffW(o=>o+1)} className="text-muted hover:text-ink p-1.5" aria-label="Semana siguiente"><Icon n="right" size={17}/></button>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-5 pb-24 md:pb-8"><Vista/></main>
+      </div>
+
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line grid grid-cols-6 pb-[env(safe-area-inset-bottom)]">
+        {VISTAS.map(([k,l,ic])=>(
+          <button key={k} onClick={()=>setVista(k)}
+            className={"flex flex-col items-center gap-0.5 py-2 text-[10px] font-bold "+(vista===k?"text-brand":"text-muted")}>
+            <Icon n={ic} size={19}/>{l}</button>))}
+      </nav>
+      {toast&&<div className="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-8 z-50 bg-ink text-bg px-4 py-2 rounded-full text-sm font-semibold shadow-lg">{toast}</div>}
+      <Modales/>
+    </div>
+  </Ctx.Provider>);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+
+/* ---------- autocomprobación: abrir con #test ---------- */
+if(location.hash==="#test")setTimeout(()=>{
+  const ok=(c,m)=>{if(!c)throw new Error("FALLA: "+m)};
+  ok(money(12500)==="$12.500","money");
+  ok(parseMoneyCO("12.500")===12500&&parseMoneyCO("12.500,50")===12500.5&&parseMoneyCO("$ 1.234.567")===1234567,"parseo de pesos");
+  ok(sabado(0).getDay()===6&&semanaDias(0)[6].getDay()===5,"semana sábado→viernes");
+  ok(totalCompra({items:[{valor:100},{valor:50}],total:9})===150,"los ítems mandan sobre el total");
+  ok(totalCompra({total:9})===9,"compra solo con total");
+  const l=lineasDeTexto("PECHUGA DE POLLO  2  16.000\nTOTAL 16.000\nARROZ DIANA 1 3.500",CATALOGO);
+  ok(l.length===2&&l[0].p==="pollo"&&l[0].valor===16000&&l[1].p==="arroz","lectura de líneas de factura");
+  ok(emparejar("CEB CABEZONA BLANCA",CATALOGO)==="cebollac","emparejar por alias");
+  console.log("Autocomprobación OK");
+  document.body.insertAdjacentHTML("beforeend","<div style='position:fixed;bottom:8px;left:8px;z-index:99;background:#2F7A55;color:#fff;padding:6px 12px;border-radius:99px;font:600 12px sans-serif'>Autocomprobación OK</div>");
+},1200);
+</script>
+</body>
+</html>
