@@ -34,3 +34,9 @@ Formato: contexto → decisión → consecuencia. Se agrega una entrada por cada
 
 ## D-011 · Se arranca con el subdominio de Vercel, no con dominio propio
 **2026-09-07.** `*.vercel.app` sirve para Google OAuth, para el OTP de Resend (el remitente de prueba escribe al dueño de la cuenta, que es justo a quien va el código) y para Turnstile. Comprar dominio solo cambia la estética y se puede hacer después sin tocar código.
+
+## D-012 · Auth.js, no Neon Auth
+**2026-09-07.** Neon ofrece autenticación integrada con sincronización de usuarios a la base. Suena a menos piezas, pero nuestro requisito no es "login con Google": es login con Google **filtrado por lista blanca**, con un camino de respaldo donde el código va al dueño y no al solicitante. Eso es un gancho a la medida en el callback `signIn`, que Auth.js expone directo y sin atarnos a un producto en beta. Consecuencia: la tabla de usuarios la manejamos nosotros; `member` y `allowed_email` son nuestras.
+
+## D-013 · Base de datos en us-east-1, la misma región de Vercel
+**2026-09-07.** La latencia que importa no es Colombia→base, es función→base: ocurre varias veces por petición. Vercel Hobby corre en `iad1` (N. Virginia); la base va ahí mismo.

@@ -69,8 +69,11 @@ No necesitas comprar nada todavía. Vercel regala un subdominio y funciona para 
 mercado-sepulveda.vercel.app
 ```
 
-- [ ] En el proyecto → Settings → Domains, dejar ese subdominio con un nombre que te guste.
-- [ ] 📋 Pasarme la dirección final.
+- [x] Proyecto creado en el team **Star** (Hobby). Dirección generada: `family-food-seven-lilac.vercel.app`
+- [ ] ⚠️ **Renombrar el dominio antes de configurar Google:** Settings → Domains → `mercado-sepulveda.vercel.app`
+      Esa dirección va dentro de Google OAuth; cambiarla después obliga a corregir Google.
+- [ ] 📋 Confirmarme la dirección final.
+- [ ] Application Preset: **Other** (no Create React App). El repo trae `vercel.json` con la configuración.
 
 > Un dominio propio (`sepulveda.co`, ~$40.000/año) solo cambia la estética. Se puede agregar después sin tocar código: si quieres, se compra en Cloudflare y se apunta a Vercel. **Lo dejamos para el final**, no bloquea nada.
 
@@ -81,8 +84,11 @@ mercado-sepulveda.vercel.app
 - [ ] Crear cuenta en https://neon.tech (también con GitHub).
 - [ ] **New Project**:
       - Nombre: `family-food`
-      - Región: **AWS us-east-1 (N. Virginia)** ← la más cercana a Colombia con capa gratis
+      - Región: **AWS US East 1 (N. Virginia)** ← la misma donde Vercel corre las funciones (`iad1`)
       - Postgres 17
+      - **Object storage: OFF** (es para los PDF de facturas, Fase 5)
+      - **Neon Auth: OFF** (vamos con Auth.js; dos sistemas de login es problema seguro)
+      - Functions y AI gateway: OFF
 - [ ] Copiar la **Connection string** (la que dice *Pooled connection*).
 - [ ] 🔒 Guardarla; va a ser `DATABASE_URL`. **No la pegues en el chat.**
 - [ ] 📋 Confirmarme: proyecto creado y región.
