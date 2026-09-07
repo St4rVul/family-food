@@ -11,10 +11,9 @@ Tiempo total estimado: **50–70 minutos**. Se puede hacer en dos ratos.
 
 ## 1 · GitHub (10 min)
 
-- [ ] Crear repositorio **privado** `family-food` en https://github.com/new
-      Sin README, sin .gitignore (yo los pongo).
-- [ ] Instalar el CLI para no pelear con contraseñas:
-      `sudo apt install gh && gh auth login`
+- [x] Repositorio creado: **github.com/St4rVul/family-food**
+- [x] `gh` instalado y autenticado como St4rVul
+- [x] Primer push hecho (rama `main`)
 - [x] 📋 Usuario de GitHub: **St4rVul**
 
 > Yo hago: `git init`, primer commit, `git remote add`, push.
@@ -70,8 +69,10 @@ mercado-sepulveda.vercel.app
 ```
 
 - [x] Proyecto creado en el team **Star** (Hobby). Dirección generada: `family-food-seven-lilac.vercel.app`
-- [ ] ⚠️ **Renombrar el dominio antes de configurar Google:** Settings → Domains → `mercado-sepulveda.vercel.app`
-      Esa dirección va dentro de Google OAuth; cambiarla después obliga a corregir Google.
+- [ ] ⚠️ **Decidir la dirección definitiva antes de configurar Google.** El `*.vercel.app` generado no se edita, se agrega otro:
+      - Settings → **Domains** → *Add Domain* → `mercado-sepulveda.vercel.app` → marcarlo como Production; **o**
+      - Settings → **General** → *Project Name* → `mercado-sepulveda` → Vercel regenera el dominio.
+      - Si pelea, deja `family-food-seven-lilac.vercel.app`: funciona igual, solo es feo. Lo que **no** se puede es cambiarla después de configurar Google.
 - [ ] 📋 Confirmarme la dirección final.
 - [ ] Application Preset: **Other** (no Create React App). El repo trae `vercel.json` con la configuración.
 
@@ -89,7 +90,10 @@ mercado-sepulveda.vercel.app
       - **Object storage: OFF** (es para los PDF de facturas, Fase 5)
       - **Neon Auth: OFF** (vamos con Auth.js; dos sistemas de login es problema seguro)
       - Functions y AI gateway: OFF
-- [ ] Copiar la **Connection string** (la que dice *Pooled connection*).
+- [x] Proyecto creado · project-id `divine-water-82655296`
+- [ ] Confirmar región **US East 1 (N. Virginia)** y que *Object storage* y *Neon Auth* quedaron **apagados**
+- [ ] Botón **Connect** → pestaña *Pooled connection* → copiar la cadena
+      > Los 7 pasos del CLI que sugiere Neon (`neon skills`, `neon mcp`, `neon deploy`…) **no se necesitan**: las migraciones van con Drizzle y el despliegue con Vercel.
 - [ ] 🔒 Guardarla; va a ser `DATABASE_URL`. **No la pegues en el chat.**
 - [ ] 📋 Confirmarme: proyecto creado y región.
 
