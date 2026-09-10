@@ -137,6 +137,21 @@ Necesitas la dirección del paso 2 antes de empezar.
 
 ---
 
+## 4b · Secretos que generas tú (2 min)
+
+Estos dos no vienen de ningún panel. Son llaves nuestras.
+
+- [ ] Correr **dos veces** en tu terminal y guardar cada resultado por aparte:
+      ```
+      openssl rand -base64 33
+      ```
+- [ ] 🔒 El primero → `AUTH_SECRET` (firma la cookie de sesión; el mismo en local y en Vercel)
+- [ ] 🔒 El segundo → `ACCESS_DECISION_SECRET` (firma los enlaces Aprobar/Rechazar del correo)
+
+> Tienen que ser distintos entre sí. Si `AUTH_SECRET` cambia después, se cierran todas las sesiones abiertas — no se pierde nada más.
+
+---
+
 ## 5 · Resend — correo del OTP (10 min)
 
 - [ ] Crear cuenta en https://resend.com con **danielsanmarquez84@gmail.com**
